@@ -10,7 +10,7 @@
 * adding
 * subtracting
 * satisfiability (maybe)
-* halting (sometimes, probably)
+* the halting problem (*yeah, right*)
 
 ## Understand what it's like to be as powerful as a computer!
 ### *(but with significantly less RAM)*
