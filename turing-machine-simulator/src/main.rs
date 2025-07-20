@@ -1,6 +1,8 @@
 #![allow(dead_code)]
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 use bevy::prelude::*;
+
+use crate::main_menu::PlayerIndex;
 
 mod main_menu;
 
@@ -23,6 +25,11 @@ fn main() {
         Startup,
         (spawn_camera)
     )
+    .add_systems(
+        Update,
+        (main_menu::controls)
+    )
+    .insert_resource(PlayerIndex::default())
     .run();
 }
 

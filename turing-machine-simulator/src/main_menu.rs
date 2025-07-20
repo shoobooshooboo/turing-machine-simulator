@@ -9,9 +9,16 @@ const BUTTON_TEXT_COLOR: Color = Color::BLACK;
 const BUTTON_SPACING_PER: f32 = 5.0;
 const BUTTON_TEXT: [&'static str; 4] = ["Play Game!", "Settings", "Credits", "Quit"];
 
+#[derive(Component, Deref, DerefMut)]
+pub struct ButtonIndex(usize);
+
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct PlayerIndex(usize);
+
 pub fn startup(
     mut commands: Commands,
 ){
+    //title text
     commands.spawn((
         Node{
             width: Val::Percent(100.0),
@@ -26,8 +33,7 @@ pub fn startup(
         Transform{
             rotation: Quat::from_rotation_z(std::f32::consts::PI / -30.0),
             ..Default::default()
-        }
-
+        },
     )).with_child((
         Text::new("Turing Machine Simulator!"),
         TextFont{
@@ -41,9 +47,11 @@ pub fn startup(
         },
         TextLayout::new_with_justify(JustifyText::Center).with_no_wrap(),
     ));
+    //make buttons
     for i in 0..BUTTON_TEXT.len(){
         commands.spawn((
             Button,
+            ButtonIndex(i),
             Node{
                 position_type: PositionType::Absolute,
                 width: Val::Percent(BUTTON_WIDTH_PER),
@@ -65,5 +73,21 @@ pub fn startup(
             TextColor(BUTTON_TEXT_COLOR),
             TextLayout::new_with_justify(JustifyText::Center).with_no_wrap(),
         ));
+    }
+}
+
+pub fn controls(
+    mut player_index: ResMut<PlayerIndex>,
+    inputs: Res<ButtonInput<KeyCode>>,
+){
+    if inputs.just_pressed(KeyCode::ArrowUp){
+        **player_index = player_index.checked_sub(1).unwrap_or(BUTTON_TEXT.len() - 1);
+    }else if inputs.just_pressed(KeyCode::ArrowDown){
+        **player_index = (**player_index + 1) % BUTTON_TEXT.len();
+    }
+    **player_index = player_index.clamp(0, BUTTON_TEXT.len() - 1);
+
+    if inputs.just_pressed(KeyCode::Enter){
+        println!("{}", BUTTON_TEXT[**player_index]);
     }
 }
