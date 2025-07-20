@@ -2,9 +2,9 @@
 //#![windows_subsystem = "windows"]
 use bevy::prelude::*;
 
-use crate::main_menu::PlayerIndex;
+mod menus;
 
-mod main_menu;
+use menus::*;
 
 
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]

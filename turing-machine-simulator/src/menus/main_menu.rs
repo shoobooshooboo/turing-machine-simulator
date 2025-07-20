@@ -1,5 +1,8 @@
 use bevy::prelude::*;
 use super::GameState;
+use super::PlayerIndex;
+use super::ButtonIndex;
+use super::UI;
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
 const BUTTON_WIDTH_PER: f32 = 60.0;
@@ -11,16 +14,7 @@ const BUTTON_SPACING_PER: f32 = 5.0;
 const BUTTON_TEXT: [&'static str; 4] = ["Play Game!", "Settings", "Credits", "Quit"];
 const BUTTON_OUTLINE_COLOR: Color = Color::BLACK;
 const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
-const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 1.0;
-
-#[derive(Component, Deref, DerefMut)]
-pub struct ButtonIndex(usize);
-
-#[derive(Resource, Deref, DerefMut, Default)]
-pub struct PlayerIndex(usize);
-
-#[derive(Component)]
-pub struct UI;
+const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 0.75;
 
 pub fn startup(
     mut commands: Commands,
