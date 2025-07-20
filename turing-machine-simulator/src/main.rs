@@ -17,6 +17,8 @@ enum GameState{
     PlayGameMenu,
     SettingsMenu,
     CreditsMenu,
+    QuitMenu,
+    InGame,
 }
 
 fn main() {
@@ -44,14 +46,15 @@ fn main() {
     .add_systems(
     Update,
     (
-        main_menu::controls.run_if(in_state(GameState::MainMenu)),
-        main_menu::button_selection.run_if(in_state(GameState::MainMenu)).after(main_menu::controls),
+        menus::controls,
+        menus::button_selection.after(menus::controls),
     ))
     .add_systems(
         Update,
         menus::scale_text
     )
     .insert_resource(PlayerIndex::default())
+    .insert_resource(ButtonCount::default())
     .run();
 }
 

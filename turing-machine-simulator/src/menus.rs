@@ -3,6 +3,10 @@ use bevy::window::WindowResized;
 use crate::{BASE_WINDOW_ASPECT_RATIO, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 
 use super::GameState;
+const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
+const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
+const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
+const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 0.75;
 
 #[derive(Component)]
 pub struct UI;
@@ -16,7 +20,11 @@ pub struct PlayerIndex(usize);
 #[derive(Component, Deref, DerefMut)]
 pub struct BaseFontSize(f32);
 
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct ButtonCount(usize);
+
 pub mod main_menu;
+pub mod credits_menu;
 
 pub fn scale_text(
     mut resizes: EventReader<WindowResized>,
@@ -28,6 +36,48 @@ pub fn scale_text(
         let scale = height_scale.min(width_scale);
         for (base, mut actual) in &mut texts{
             actual.font_size = **base * scale;
+        }
+    }
+}
+
+pub fn button_selection(
+    player_index: Res<PlayerIndex>,
+    mut buttons: Query<(&ButtonIndex, &mut BackgroundColor, &mut Outline), With<Button>>,
+){
+    for (index, mut bgc, mut outline) in &mut buttons{
+        if **index == **player_index{
+            bgc.0 = BUTTON_SELECTED_COLOR;
+            outline.width = Val::Percent(BUTTON_OUTLINE_SELECTED_WIDTH_PER);
+        }
+        else{
+            outline.width = Val::Percent(BUTTON_OUTLINE_UNSELECTED_WIDTH_PER);
+            bgc.0 = BUTTON_UNSELECTED_COLOR;
+        }
+    }
+}
+
+pub fn controls(
+    mut player_index: ResMut<PlayerIndex>,
+    inputs: Res<ButtonInput<KeyCode>>,
+    mut exit: EventWriter<AppExit>,
+    mut next_state: ResMut<NextState<GameState>>,
+    button_count: Res<ButtonCount>,
+
+){
+    if inputs.just_pressed(KeyCode::ArrowUp){
+        **player_index = player_index.checked_sub(1).unwrap_or(**button_count - 1);
+    }else if inputs.just_pressed(KeyCode::ArrowDown){
+        **player_index = (**player_index + 1) % **button_count;
+    }
+    **player_index = player_index.clamp(0, **button_count - 1);
+
+    if inputs.just_pressed(KeyCode::Enter){
+        match **player_index{
+            0 => {next_state.set(GameState::PlayGameMenu)},
+            1 => {next_state.set(GameState::SettingsMenu)},
+            2 => {next_state.set(GameState::CreditsMenu)},
+            3 => {exit.write(AppExit::Success);},
+            _ => panic!("somehow went into a non-existant menu"),
         }
     }
 }

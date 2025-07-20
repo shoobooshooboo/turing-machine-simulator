@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
-use super::GameState;
-use super::PlayerIndex;
-use super::ButtonIndex;
-use super::UI;
-use super::BaseFontSize;
+
+use crate::menus::{ButtonIndex, ButtonCount, UI, BaseFontSize, BUTTON_UNSELECTED_COLOR, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER};
 //title
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
@@ -12,11 +9,7 @@ const TITLE_FONT_SIZE: f32 = 80.0;
 //buttons
 const BUTTON_WIDTH_PER: f32 = 60.0;
 const BUTTON_HEIGHT_PER: f32 = 12.0;
-const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
-const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
 const BUTTON_OUTLINE_COLOR: Color = Color::BLACK;
-const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
-const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 0.75;
 const BUTTON_SPACING_PER: f32 = 5.0;
 //button text
 const BUTTON_TEXT: [&'static str; 4] = ["Play Game!", "Settings", "Credits", "Quit"];
@@ -26,7 +19,9 @@ const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 
 pub fn startup(
     mut commands: Commands,
+    mut button_count: ResMut<ButtonCount>
 ){
+    **button_count = BUTTON_TEXT.len();
     //title text
     commands.spawn((
         UI,
@@ -93,46 +88,6 @@ pub fn startup(
             TextColor(BUTTON_TEXT_COLOR),
             TextLayout::new_with_justify(JustifyText::Center).with_no_wrap(),
         ));
-    }
-}
-
-pub fn controls(
-    mut player_index: ResMut<PlayerIndex>,
-    inputs: Res<ButtonInput<KeyCode>>,
-    mut exit: EventWriter<AppExit>,
-    mut next_state: ResMut<NextState<GameState>>,
-){
-    if inputs.just_pressed(KeyCode::ArrowUp){
-        **player_index = player_index.checked_sub(1).unwrap_or(BUTTON_TEXT.len() - 1);
-    }else if inputs.just_pressed(KeyCode::ArrowDown){
-        **player_index = (**player_index + 1) % BUTTON_TEXT.len();
-    }
-    **player_index = player_index.clamp(0, BUTTON_TEXT.len() - 1);
-
-    if inputs.just_pressed(KeyCode::Enter){
-        match **player_index{
-            0 => {next_state.set(GameState::PlayGameMenu)},
-            1 => {next_state.set(GameState::SettingsMenu)},
-            2 => {next_state.set(GameState::CreditsMenu)},
-            3 => {exit.write(AppExit::Success);},
-            _ => panic!("somehow went into a non-existant menu"),
-        }
-    }
-}
-
-pub fn button_selection(
-    player_index: Res<PlayerIndex>,
-    mut buttons: Query<(&ButtonIndex, &mut BackgroundColor, &mut Outline), With<Button>>,
-){
-    for (index, mut bgc, mut outline) in &mut buttons{
-        if **index == **player_index{
-            bgc.0 = BUTTON_SELECTED_COLOR;
-            outline.width = Val::Percent(BUTTON_OUTLINE_SELECTED_WIDTH_PER);
-        }
-        else{
-            outline.width = Val::Percent(BUTTON_OUTLINE_UNSELECTED_WIDTH_PER);
-            bgc.0 = BUTTON_UNSELECTED_COLOR;
-        }
     }
 }
 
