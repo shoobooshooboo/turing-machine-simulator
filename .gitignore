@@ -1,2 +1,2 @@
-.turing-machine-simulator/target/debug/deps
-.turing-machine-simulator/target/release/deps
+turing-machine-simulator/target/debug/
+turing-machine-simulator/target/release/deps/
