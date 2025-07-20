@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
-use crate::menus::{ButtonIndex, ButtonCount, UI, BaseFontSize, BUTTON_UNSELECTED_COLOR, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER};
+use crate::{menus::{BaseFontSize, ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, UI}, MenuState};
 //title
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
@@ -17,7 +17,7 @@ const BUTTON_TEXT_COLOR: Color = Color::BLACK;
 const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 
 
-pub fn startup(
+pub fn load(
     mut commands: Commands,
     mut button_count: ResMut<ButtonCount>,
 ){
@@ -89,5 +89,19 @@ pub fn startup(
             TextColor(BUTTON_TEXT_COLOR),
             TextLayout::new_with_justify(JustifyText::Center).with_no_wrap(),
         ));
+    }
+}
+
+pub fn transition(
+    player_index: ResMut<PlayerIndex>,
+    mut exit: EventWriter<AppExit>,
+    mut next_state: ResMut<NextState<MenuState>>,
+){
+    match **player_index{
+        0 => {next_state.set(MenuState::PlayGameMenu)},
+        1 => {next_state.set(MenuState::SettingsMenu)},
+        2 => {next_state.set(MenuState::CreditsMenu)},
+        3 => {exit.write(AppExit::Success);},
+        _ => panic!("somehow went into a non-existant menu"),
     }
 }

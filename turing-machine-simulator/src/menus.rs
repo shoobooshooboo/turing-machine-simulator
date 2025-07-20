@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::window::WindowResized;
-use crate::{GameState, BASE_WINDOW_ASPECT_RATIO, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{GameState, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 
 use super::MenuState;
 const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
@@ -59,9 +59,10 @@ pub fn button_selection(
 pub fn controls(
     mut player_index: ResMut<PlayerIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
-    mut exit: EventWriter<AppExit>,
-    mut next_state: ResMut<NextState<MenuState>>,
-    mut next_game_state: ResMut<NextState<GameState>>,
+    exit: EventWriter<AppExit>,
+    menu_state: Res<State<MenuState>>,
+    next_state: ResMut<NextState<MenuState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,    
     button_count: Res<ButtonCount>,
 
 ){
@@ -74,12 +75,10 @@ pub fn controls(
 
     if inputs.just_pressed(KeyCode::Enter){
         next_game_state.set(GameState::Transition);
-        match **player_index{
-            0 => {next_state.set(MenuState::PlayGameMenu)},
-            1 => {next_state.set(MenuState::SettingsMenu)},
-            2 => {next_state.set(MenuState::CreditsMenu)},
-            3 => {exit.write(AppExit::Success);},
-            _ => panic!("somehow went into a non-existant menu"),
+        match **menu_state{
+            MenuState::MainMenu => main_menu::transition(player_index, exit, next_state),
+            MenuState::CreditsMenu => credits_menu::transition(next_state),
+            _ => println!("unimplemented menu"),
         }
     }
 }
@@ -88,22 +87,19 @@ pub fn unload_ui(
     mut commands: Commands,
     ui_elements: Query<Entity, With<UI>>,
 ){
-    println!("menu unload!");
     for entity in ui_elements{
         commands.entity(entity).despawn();
     }
 }
 
-pub fn startup(
-    mut commands: Commands,
-    mut button_count: ResMut<ButtonCount>,
+pub fn load_ui(
+    commands: Commands,
+    button_count: ResMut<ButtonCount>,
     menu_state: Res<State<MenuState>>,
-    mut next_game_state: ResMut<NextState<GameState>>,
 ){
-    println!("menu startup!");
     match **menu_state{
-        MenuState::MainMenu => main_menu::startup(commands, button_count),
-        MenuState::CreditsMenu => credits_menu::startup(commands, button_count),
+        MenuState::MainMenu => main_menu::load(commands, button_count),
+        MenuState::CreditsMenu => credits_menu::load(commands, button_count),
         _ => print!("unimplemented menu"),
     }
 }

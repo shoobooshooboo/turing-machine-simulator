@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
-use crate::GameState;
+use crate::MenuState;
 
 use super::{UI, ButtonIndex, ButtonCount, BaseFontSize, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
 
@@ -21,7 +21,7 @@ const BUTTON_SPACING_PER: f32 = 5.0;
 const BUTTON_TEXT_COLOR: Color = Color::BLACK;
 const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 
-pub fn startup(
+pub fn load(
     mut commands: Commands,
     mut button_count: ResMut<ButtonCount>,
 ){
@@ -117,4 +117,10 @@ pub fn startup(
             TextColor(BUTTON_TEXT_COLOR),
             TextLayout::new_with_justify(JustifyText::Center).with_no_wrap(),
         ));
+}
+
+pub fn transition(
+    mut next_state: ResMut<NextState<MenuState>>, 
+){
+    next_state.set(MenuState::MainMenu)
 }

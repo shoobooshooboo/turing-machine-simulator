@@ -18,6 +18,7 @@ enum MenuState{
     SettingsMenu,
     CreditsMenu,
     QuitMenu,
+    None,
 }
 
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -48,11 +49,16 @@ fn main() {
         spawn_camera
     )
     .add_systems(
-        OnEnter(GameState::InMenu),
-        menus::startup)
+        OnEnter(GameState::Transition),
+        transition
+    )
     .add_systems(
-        OnExit(GameState::InMenu),
-         menus::unload_ui)
+        OnEnter(GameState::InMenu),
+        menus::load_ui)
+    .add_systems(
+        OnTransition{exited: GameState::InMenu, entered: GameState::Transition},
+         menus::unload_ui
+    )
     .add_systems(
     Update,
     (
@@ -70,4 +76,14 @@ fn spawn_camera(
     mut commands: Commands,
 ){
     commands.spawn(Camera2d::default());
+}
+
+fn transition(
+    menu_state: Res<State<MenuState>>,
+    mut next_game_state: ResMut<NextState<GameState>>, 
+){
+    match **menu_state{
+        MenuState::None => (),
+        _ => {next_game_state.set(GameState::InMenu);},
+    }
 }
