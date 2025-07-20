@@ -1,20 +1,28 @@
 use bevy::prelude::*;
+use bevy::text::FontSmoothing;
 use super::GameState;
 use super::PlayerIndex;
 use super::ButtonIndex;
 use super::UI;
+use super::BaseFontSize;
+//title
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
+const TITLE_FONT_SIZE: f32 = 80.0;
+//buttons
 const BUTTON_WIDTH_PER: f32 = 60.0;
 const BUTTON_HEIGHT_PER: f32 = 12.0;
 const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
 const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
-const BUTTON_TEXT_COLOR: Color = Color::BLACK;
-const BUTTON_SPACING_PER: f32 = 5.0;
-const BUTTON_TEXT: [&'static str; 4] = ["Play Game!", "Settings", "Credits", "Quit"];
 const BUTTON_OUTLINE_COLOR: Color = Color::BLACK;
 const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
 const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 0.75;
+const BUTTON_SPACING_PER: f32 = 5.0;
+//button text
+const BUTTON_TEXT: [&'static str; 4] = ["Play Game!", "Settings", "Credits", "Quit"];
+const BUTTON_TEXT_COLOR: Color = Color::BLACK;
+const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
+
 
 pub fn startup(
     mut commands: Commands,
@@ -39,9 +47,11 @@ pub fn startup(
     )).with_child((
         Text::new("Turing Machine Simulator!"),
         TextFont{
-            font_size: 80.0,
+            font_size: TITLE_FONT_SIZE,
+            font_smoothing: FontSmoothing::AntiAliased,
             ..Default::default()
         },
+        BaseFontSize(TITLE_FONT_SIZE),
         TextColor(Color::WHITE),
         TextShadow{
             color: Color::linear_rgba(0.9, 0.9, 0.9, 0.8),
@@ -75,9 +85,11 @@ pub fn startup(
         )).with_child((
             Text::new(BUTTON_TEXT[i]),
             TextFont {
-                font_size: 60.0,
+                font_size: BUTTON_TEXT_FONT_SIZE,
+                font_smoothing: FontSmoothing::AntiAliased,
                 ..Default::default()
             },
+            BaseFontSize(BUTTON_TEXT_FONT_SIZE),
             TextColor(BUTTON_TEXT_COLOR),
             TextLayout::new_with_justify(JustifyText::Center).with_no_wrap(),
         ));
