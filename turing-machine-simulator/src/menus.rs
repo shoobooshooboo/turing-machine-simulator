@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy::window::WindowResized;
-use crate::{BASE_WINDOW_ASPECT_RATIO, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{GameState, BASE_WINDOW_ASPECT_RATIO, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 
-use super::GameState;
+use super::MenuState;
 const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
 const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
 const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
@@ -60,7 +60,8 @@ pub fn controls(
     mut player_index: ResMut<PlayerIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
     mut exit: EventWriter<AppExit>,
-    mut next_state: ResMut<NextState<GameState>>,
+    mut next_state: ResMut<NextState<MenuState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     button_count: Res<ButtonCount>,
 
 ){
@@ -72,12 +73,37 @@ pub fn controls(
     **player_index = player_index.clamp(0, **button_count - 1);
 
     if inputs.just_pressed(KeyCode::Enter){
+        next_game_state.set(GameState::Transition);
         match **player_index{
-            0 => {next_state.set(GameState::PlayGameMenu)},
-            1 => {next_state.set(GameState::SettingsMenu)},
-            2 => {next_state.set(GameState::CreditsMenu)},
+            0 => {next_state.set(MenuState::PlayGameMenu)},
+            1 => {next_state.set(MenuState::SettingsMenu)},
+            2 => {next_state.set(MenuState::CreditsMenu)},
             3 => {exit.write(AppExit::Success);},
             _ => panic!("somehow went into a non-existant menu"),
         }
+    }
+}
+
+pub fn unload_ui(
+    mut commands: Commands,
+    ui_elements: Query<Entity, With<UI>>,
+){
+    println!("menu unload!");
+    for entity in ui_elements{
+        commands.entity(entity).despawn();
+    }
+}
+
+pub fn startup(
+    mut commands: Commands,
+    mut button_count: ResMut<ButtonCount>,
+    menu_state: Res<State<MenuState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+){
+    println!("menu startup!");
+    match **menu_state{
+        MenuState::MainMenu => main_menu::startup(commands, button_count),
+        MenuState::CreditsMenu => credits_menu::startup(commands, button_count),
+        _ => print!("unimplemented menu"),
     }
 }

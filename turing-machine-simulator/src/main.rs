@@ -12,13 +12,20 @@ const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
 
 
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum GameState{
+enum MenuState{
     MainMenu,
     PlayGameMenu,
     SettingsMenu,
     CreditsMenu,
     QuitMenu,
+}
+
+#[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+enum GameState{
     InGame,
+    InMenu,
+    Paused,
+    Transition,
 }
 
 fn main() {
@@ -32,29 +39,30 @@ fn main() {
         }),
         ..Default::default()
     }))
-    .insert_state(GameState::MainMenu)
-    .add_systems(
-        OnEnter(GameState::MainMenu),
-        main_menu::startup)
+    .insert_state(MenuState::MainMenu)
+    .insert_state(GameState::InMenu)
+    .insert_resource(PlayerIndex::default())
+    .insert_resource(ButtonCount::default())
     .add_systems(
         Startup,
         spawn_camera
     )
     .add_systems(
-        OnExit(GameState::MainMenu),
-         main_menu::exit)
+        OnEnter(GameState::InMenu),
+        menus::startup)
+    .add_systems(
+        OnExit(GameState::InMenu),
+         menus::unload_ui)
     .add_systems(
     Update,
     (
-        menus::controls,
-        menus::button_selection.after(menus::controls),
+        menus::controls.run_if(in_state(GameState::InMenu)),
+        menus::button_selection.run_if(in_state(GameState::InMenu)).after(menus::controls),
     ))
     .add_systems(
         Update,
         menus::scale_text
     )
-    .insert_resource(PlayerIndex::default())
-    .insert_resource(ButtonCount::default())
     .run();
 }
 

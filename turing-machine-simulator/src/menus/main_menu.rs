@@ -19,9 +19,10 @@ const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 
 pub fn startup(
     mut commands: Commands,
-    mut button_count: ResMut<ButtonCount>
+    mut button_count: ResMut<ButtonCount>,
 ){
     **button_count = BUTTON_TEXT.len();
+    println!("main menu startup!");
     //title text
     commands.spawn((
         UI,
@@ -88,14 +89,5 @@ pub fn startup(
             TextColor(BUTTON_TEXT_COLOR),
             TextLayout::new_with_justify(JustifyText::Center).with_no_wrap(),
         ));
-    }
-}
-
-pub fn exit(
-    mut commands: Commands,
-    ui_elements: Query<Entity, With<UI>>,
-){
-    for entity in ui_elements{
-        commands.entity(entity).despawn();
     }
 }

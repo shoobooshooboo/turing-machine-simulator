@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
+use crate::GameState;
+
 use super::{UI, ButtonIndex, ButtonCount, BaseFontSize, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
 
 //text
