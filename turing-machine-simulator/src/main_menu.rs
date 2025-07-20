@@ -3,11 +3,14 @@ const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
 const BUTTON_WIDTH_PER: f32 = 60.0;
 const BUTTON_HEIGHT_PER: f32 = 12.0;
-const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.5, 0.5, 0.5);
-const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(0.75, 0.75, 0.75);
+const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
+const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
 const BUTTON_TEXT_COLOR: Color = Color::BLACK;
 const BUTTON_SPACING_PER: f32 = 5.0;
 const BUTTON_TEXT: [&'static str; 4] = ["Play Game!", "Settings", "Credits", "Quit"];
+const BUTTON_OUTLINE_COLOR: Color = Color::BLACK;
+const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
+const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 1.0;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct ButtonIndex(usize);
@@ -64,6 +67,11 @@ pub fn startup(
             },
             BackgroundColor(BUTTON_UNSELECTED_COLOR),
             BorderRadius::all(Val::VMax(5.0)),
+            Outline{
+                color: BUTTON_OUTLINE_COLOR,
+                width: Val::Percent(BUTTON_OUTLINE_UNSELECTED_WIDTH_PER),
+                ..Default::default()
+            },
         )).with_child((
             Text::new(BUTTON_TEXT[i]),
             TextFont {
@@ -79,6 +87,7 @@ pub fn startup(
 pub fn controls(
     mut player_index: ResMut<PlayerIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
+    mut exit: EventWriter<AppExit>,
 ){
     if inputs.just_pressed(KeyCode::ArrowUp){
         **player_index = player_index.checked_sub(1).unwrap_or(BUTTON_TEXT.len() - 1);
@@ -88,6 +97,25 @@ pub fn controls(
     **player_index = player_index.clamp(0, BUTTON_TEXT.len() - 1);
 
     if inputs.just_pressed(KeyCode::Enter){
-        println!("{}", BUTTON_TEXT[**player_index]);
+        match **player_index{
+            3 => {exit.write(AppExit::Success);},
+            _ => println!("{}", BUTTON_TEXT[**player_index]),
+        }
+    }
+}
+
+pub fn button_selection(
+    player_index: Res<PlayerIndex>,
+    mut buttons: Query<(&ButtonIndex, &mut BackgroundColor, &mut Outline), With<Button>>,
+){
+    for (index, mut bgc, mut outline) in &mut buttons{
+        if **index == **player_index{
+            bgc.0 = BUTTON_SELECTED_COLOR;
+            outline.width = Val::Percent(BUTTON_OUTLINE_SELECTED_WIDTH_PER);
+        }
+        else{
+            outline.width = Val::Percent(BUTTON_OUTLINE_UNSELECTED_WIDTH_PER);
+            bgc.0 = BUTTON_UNSELECTED_COLOR;
+        }
     }
 }

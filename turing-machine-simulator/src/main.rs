@@ -27,7 +27,10 @@ fn main() {
     )
     .add_systems(
         Update,
-        (main_menu::controls)
+        (
+            main_menu::controls,
+            main_menu::button_selection.after(main_menu::controls),
+        )
     )
     .insert_resource(PlayerIndex::default())
     .run();
