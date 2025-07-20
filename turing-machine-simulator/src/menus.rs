@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::window::WindowResized;
-use crate::{BASE_WINDOW_ASPECT_RATIO, BASE_WINDOW_WIDTH};
+use crate::{BASE_WINDOW_ASPECT_RATIO, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 
 use super::GameState;
 
@@ -23,7 +23,9 @@ pub fn scale_text(
     mut texts: Query<(&BaseFontSize, &mut TextFont)>
 ){
     for event in resizes.read(){
-        let scale = event.width / BASE_WINDOW_WIDTH;
+        let height_scale = event.height / BASE_WINDOW_HEIGHT;
+        let width_scale = event.width / BASE_WINDOW_WIDTH;
+        let scale = height_scale.min(width_scale);
         for (base, mut actual) in &mut texts{
             actual.font_size = **base * scale;
         }
