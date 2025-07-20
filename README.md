@@ -11,3 +11,6 @@
 * subtracting
 * satisfiability (maybe)
 * halting (sometimes, probably)
+
+## Understand what it's like to be as powerful as a computer!
+# *(but with significantly less RAM)*
