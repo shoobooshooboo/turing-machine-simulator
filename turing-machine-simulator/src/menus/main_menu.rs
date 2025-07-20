@@ -22,7 +22,6 @@ pub fn load(
     mut button_count: ResMut<ButtonCount>,
 ){
     **button_count = BUTTON_TEXT.len();
-    println!("main menu startup!");
     //title text
     commands.spawn((
         UI,

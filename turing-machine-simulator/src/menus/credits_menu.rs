@@ -40,7 +40,7 @@ pub fn load(
         },
         BackgroundColor(Color::NONE),
         Transform{
-            rotation: Quat::from_rotation_z(std::f32::consts::PI / -30.0),
+            // rotation: Quat::from_rotation_z(std::f32::consts::PI / -30.0),
             ..Default::default()
         },
     )).with_child((
@@ -63,13 +63,13 @@ pub fn load(
             height: Val::Percent(SUBTEXT_HEIGHT_PER),
             top: Val::Percent(TEXT_HEIGHT_PER + TEXT_SPACING_PER),
             left: Val::Percent(0.0),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Start,
+            align_items: AlignItems::Start,
             ..Default::default()
         },
         BackgroundColor(Color::NONE),
         Transform{
-            rotation: Quat::from_rotation_z(std::f32::consts::PI / -30.0),
+            // rotation: Quat::from_rotation_z(std::f32::consts::PI / -30.0),
             ..Default::default()
         },
     )).with_child((
@@ -93,7 +93,7 @@ pub fn load(
                 position_type: PositionType::Absolute,
                 width: Val::Percent(BUTTON_WIDTH_PER),
                 height: Val::Percent(BUTTON_HEIGHT_PER),
-                bottom: Val::Percent(100.0 - TEXT_HEIGHT_PER - SUBTEXT_HEIGHT_PER - TEXT_SPACING_PER * 2.0 as f32),
+                bottom: Val::Percent(2.0),
                 left: Val::Percent((100.0 - BUTTON_WIDTH_PER) / 2.0),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
