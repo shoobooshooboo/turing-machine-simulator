@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use super::GameState;
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
 const BUTTON_WIDTH_PER: f32 = 60.0;
@@ -18,11 +19,15 @@ pub struct ButtonIndex(usize);
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct PlayerIndex(usize);
 
+#[derive(Component)]
+pub struct UI;
+
 pub fn startup(
     mut commands: Commands,
 ){
     //title text
     commands.spawn((
+        UI,
         Node{
             width: Val::Percent(100.0),
             height: Val::Percent(TITLE_HEIGHT_PER),
@@ -53,6 +58,7 @@ pub fn startup(
     //make buttons
     for i in 0..BUTTON_TEXT.len(){
         commands.spawn((
+            UI,
             Button,
             ButtonIndex(i),
             Node{
@@ -88,6 +94,7 @@ pub fn controls(
     mut player_index: ResMut<PlayerIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
     mut exit: EventWriter<AppExit>,
+    mut next_state: ResMut<NextState<GameState>>,
 ){
     if inputs.just_pressed(KeyCode::ArrowUp){
         **player_index = player_index.checked_sub(1).unwrap_or(BUTTON_TEXT.len() - 1);
@@ -98,8 +105,11 @@ pub fn controls(
 
     if inputs.just_pressed(KeyCode::Enter){
         match **player_index{
+            0 => {next_state.set(GameState::PlayGameMenu)},
+            1 => {next_state.set(GameState::SettingsMenu)},
+            2 => {next_state.set(GameState::CreditsMenu)},
             3 => {exit.write(AppExit::Success);},
-            _ => println!("{}", BUTTON_TEXT[**player_index]),
+            _ => panic!("somehow went into a non-existant menu"),
         }
     }
 }
@@ -117,5 +127,14 @@ pub fn button_selection(
             outline.width = Val::Percent(BUTTON_OUTLINE_UNSELECTED_WIDTH_PER);
             bgc.0 = BUTTON_UNSELECTED_COLOR;
         }
+    }
+}
+
+pub fn exit(
+    mut commands: Commands,
+    ui_elements: Query<Entity, With<UI>>,
+){
+    for entity in ui_elements{
+        commands.entity(entity).despawn();
     }
 }
