@@ -73,7 +73,7 @@ pub fn load(
             ..Default::default()
         },
     )).with_child((
-        Text::new("Enabler: H Hayes"),
+        Text::new("Enabler: H Hays"),
         TextFont{
             font_size: SUBTEXT_FONT_SIZE,
             font_smoothing: FontSmoothing::AntiAliased,
