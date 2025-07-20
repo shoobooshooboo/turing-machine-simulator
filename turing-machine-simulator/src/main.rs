@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
 use bevy::prelude::*;
 
 mod main_menu;
@@ -8,7 +8,7 @@ mod main_menu;
 enum GameState{
     MainMenu,
     InGame,
-    
+    Settings,
 }
 
 fn main() {
