@@ -7,8 +7,6 @@ mod games;
 
 use menus::*;
 
-use crate::games::Tape;
-
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
@@ -52,6 +50,7 @@ fn main() {
         ..Default::default()
     }))
     .add_plugins(menus::MenuPlugin)
+    .add_plugins(games::GamePlugin)
     .insert_state(AppState::InMenu)
     .add_systems(
         Startup,

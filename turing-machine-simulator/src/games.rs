@@ -1,4 +1,4 @@
-use bevy::{image::TranscodeFormat, prelude::*, render::mesh::Triangle2dMeshBuilder, sprite::Material2d, window::PrimaryWindow};
+use bevy::{prelude::*, render::mesh::Triangle2dMeshBuilder,};
 
 use crate::{AppState, GameState};
 
@@ -29,17 +29,16 @@ impl Plugin for GamePlugin{
         .insert_resource(Tape::default())
         .add_systems(
         OnEnter(AppState::InGame),
-        load
+        load_game
         );
     }
 }
 
 /// loads the game elements
-pub fn load(
+pub fn load_game(
     mut commands: Commands,
     tape: ResMut<Tape>,
     game_state: Res<State<GameState>>,
-    window: Single<&Window, With<PrimaryWindow>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<ColorMaterial>>,
 ){
@@ -65,4 +64,4 @@ pub fn load(
 }
 
 ///unloads all game elements
-pub fn unload(){}
+pub fn unload_game(){}
