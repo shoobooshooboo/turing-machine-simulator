@@ -120,7 +120,7 @@ pub fn load(
 }
 
 pub fn transition(
-    mut next_state: ResMut<NextState<MenuState>>, 
+    mut next_menu_state: ResMut<NextState<MenuState>>, 
 ){
-    next_state.set(MenuState::MainMenu)
+    next_menu_state.set(MenuState::MainMenu)
 }

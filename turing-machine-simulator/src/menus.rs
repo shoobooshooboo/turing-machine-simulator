@@ -1,8 +1,9 @@
+use std::collections::btree_set;
+
 use bevy::prelude::*;
 use bevy::window::WindowResized;
-use crate::{GameState, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{AppState, GameState, MenuState, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 
-use super::MenuState;
 const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
 const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
 const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
@@ -25,6 +26,7 @@ pub struct ButtonCount(usize);
 
 pub mod main_menu;
 pub mod credits_menu;
+pub mod game_menu;
 
 pub fn scale_text(
     mut resizes: EventReader<WindowResized>,
@@ -61,8 +63,9 @@ pub fn controls(
     inputs: Res<ButtonInput<KeyCode>>,
     exit: EventWriter<AppExit>,
     menu_state: Res<State<MenuState>>,
-    next_state: ResMut<NextState<MenuState>>,
-    mut next_game_state: ResMut<NextState<GameState>>,    
+    next_menu_state: ResMut<NextState<MenuState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,    
+    next_game_state: ResMut<NextState<GameState>>,    
     button_count: Res<ButtonCount>,
 
 ){
@@ -74,10 +77,11 @@ pub fn controls(
     **player_index = player_index.clamp(0, **button_count - 1);
 
     if inputs.just_pressed(KeyCode::Enter){
-        next_game_state.set(GameState::Transition);
+        next_app_state.set(AppState::Transition);
         match **menu_state{
-            MenuState::MainMenu => main_menu::transition(player_index, exit, next_state),
-            MenuState::CreditsMenu => credits_menu::transition(next_state),
+            MenuState::MainMenu => main_menu::transition(player_index, exit, next_menu_state),
+            MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_game_state),
+            MenuState::CreditsMenu => credits_menu::transition(next_menu_state),
             _ => println!("unimplemented menu"),
         }
     }
@@ -99,6 +103,7 @@ pub fn load_ui(
 ){
     match **menu_state{
         MenuState::MainMenu => main_menu::load(commands, button_count),
+        MenuState::GameMenu => game_menu::load(commands, button_count), 
         MenuState::CreditsMenu => credits_menu::load(commands, button_count),
         _ => print!("unimplemented menu"),
     }

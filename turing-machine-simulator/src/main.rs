@@ -10,23 +10,31 @@ const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
 
-
+/// controls the current menu
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum MenuState{
     MainMenu,
-    PlayGameMenu,
+    GameMenu,
     SettingsMenu,
     CreditsMenu,
     QuitMenu,
     None,
 }
 
+/// controls the current app state
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum GameState{
+enum AppState{
     InGame,
     InMenu,
     Paused,
     Transition,
+}
+
+/// controls the current gamemode
+#[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+enum GameState{
+    Sandbox,
+    None,
 }
 
 fn main() {
@@ -41,7 +49,8 @@ fn main() {
         ..Default::default()
     }))
     .insert_state(MenuState::MainMenu)
-    .insert_state(GameState::InMenu)
+    .insert_state(AppState::InMenu)
+    .insert_state(GameState::None)
     .insert_resource(PlayerIndex::default())
     .insert_resource(ButtonCount::default())
     .add_systems(
@@ -49,21 +58,21 @@ fn main() {
         spawn_camera
     )
     .add_systems(
-        OnEnter(GameState::Transition),
+        OnEnter(AppState::Transition),
         transition
     )
     .add_systems(
-        OnEnter(GameState::InMenu),
+        OnEnter(AppState::InMenu),
         menus::load_ui)
     .add_systems(
-        OnTransition{exited: GameState::InMenu, entered: GameState::Transition},
+        OnTransition{exited: AppState::InMenu, entered: AppState::Transition},
          menus::unload_ui
     )
     .add_systems(
     Update,
     (
-        menus::controls.run_if(in_state(GameState::InMenu)),
-        menus::button_selection.run_if(in_state(GameState::InMenu)).after(menus::controls),
+        menus::controls.run_if(in_state(AppState::InMenu)),
+        menus::button_selection.run_if(in_state(AppState::InMenu)).after(menus::controls),
     ))
     .add_systems(
         Update,
@@ -80,10 +89,10 @@ fn spawn_camera(
 
 fn transition(
     menu_state: Res<State<MenuState>>,
-    mut next_game_state: ResMut<NextState<GameState>>, 
+    mut next_game_state: ResMut<NextState<AppState>>, 
 ){
     match **menu_state{
         MenuState::None => (),
-        _ => {next_game_state.set(GameState::InMenu);},
+        _ => {next_game_state.set(AppState::InMenu);},
     }
 }
