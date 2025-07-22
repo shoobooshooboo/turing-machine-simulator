@@ -7,6 +7,8 @@ mod games;
 
 use menus::*;
 
+use crate::games::Tape;
+
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
@@ -54,9 +56,14 @@ fn main() {
     .insert_state(GameState::None)
     .insert_resource(PlayerIndex::default())
     .insert_resource(ButtonCount::default())
+    .insert_resource(Tape::default())
     .add_systems(
         Startup,
         spawn_camera
+    )
+    .add_systems(
+        Update,
+        menus::scale_text
     )
     .add_systems(
         OnEnter(AppState::Transition),
@@ -64,7 +71,8 @@ fn main() {
     )
     .add_systems(
         OnEnter(AppState::InMenu),
-        menus::load_ui)
+        menus::load_ui
+    )
     .add_systems(
         OnTransition{exited: AppState::InMenu, entered: AppState::Transition},
          menus::unload_ui
@@ -76,8 +84,8 @@ fn main() {
         menus::button_selection.run_if(in_state(AppState::InMenu)).after(menus::controls),
     ))
     .add_systems(
-        Update,
-        menus::scale_text
+        OnEnter(AppState::InGame),
+        games::load
     )
     .run();
 }
