@@ -2,6 +2,7 @@ use bevy::{prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing,
 use crate::{BaseFontSize, AppState, GameState};
 
 const CELL_SPACING_PER: f32 = 5.0;
+const CELL_COUNT: usize = 1_000;
 const VISIBLE_CELL_COUNT: u8 = 5;
 const CELL_WIDTH: f32 = (100.0 - (CELL_SPACING_PER * (VISIBLE_CELL_COUNT + 1) as f32)) / VISIBLE_CELL_COUNT as f32;
 const BORDER_WIDTH_PER: f32 = 3.0;
@@ -16,16 +17,19 @@ struct GameUI;
 
 #[derive(Resource, Deref, DerefMut)]
 struct Tape{
-    cells: Box<[char; 1_000]>
+    cells: Box<[char; CELL_COUNT]>
 }
 
 impl Default for Tape{
     fn default() -> Self {
         Self{
-            cells: Box::new(['∧'; 1_000])
+            cells: Box::new(['_'; CELL_COUNT])
         }
     }
 }
+
+#[derive(Resource, Deref, DerefMut, Default)]
+struct CursorIndex(usize);
 
 pub struct GamePlugin;
 
@@ -34,6 +38,7 @@ impl Plugin for GamePlugin{
         app
         .insert_state(GameState::None)
         .insert_resource(Tape::default())
+        .insert_resource(CursorIndex::default())
         .add_systems(
         OnEnter(AppState::InGame),
         load_game
@@ -48,7 +53,11 @@ fn load_game(
     game_state: Res<State<GameState>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<ColorMaterial>>,
+    mut cursor_index: ResMut<CursorIndex>,
 ){
+    //reset cursor
+    **cursor_index = 0;
+
     //loads the tape
     for i in 0..VISIBLE_CELL_COUNT{
         commands.spawn((
@@ -93,6 +102,21 @@ fn load_game(
         GameState::Sandbox => sandbox::load(commands, tape),
         _ => println!("unimplemented menu"),
     }
+}
+
+///handles user inputs
+fn controls(
+    mut cursor: ResMut<CursorIndex>,
+    inputs: Res<ButtonInput<KeyCode>>,
+){
+    if inputs.just_pressed(KeyCode::ArrowLeft){
+        **cursor = cursor.checked_sub(1).unwrap_or(0);
+    }
+    if inputs.just_pressed(KeyCode::ArrowRight){
+        **cursor += 1;
+    }
+
+    **cursor = cursor.clamp(0, CELL_COUNT - 1);
 }
 
 ///unloads all game elements
