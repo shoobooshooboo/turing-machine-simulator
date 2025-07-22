@@ -8,7 +8,7 @@ const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
 const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 0.75;
 
 #[derive(Component)]
-pub struct UI;
+pub struct MenuUI;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct ButtonIndex(usize);
@@ -26,6 +26,7 @@ pub mod main_menu;
 pub mod credits_menu;
 pub mod game_menu;
 
+/// scales all text in the world based on the window size
 pub fn scale_text(
     mut resizes: EventReader<WindowResized>,
     mut texts: Query<(&BaseFontSize, &mut TextFont)>
@@ -40,6 +41,7 @@ pub fn scale_text(
     }
 }
 
+/// sets a button's background color and border width depending off it is selected or not
 pub fn button_selection(
     player_index: Res<PlayerIndex>,
     mut buttons: Query<(&ButtonIndex, &mut BackgroundColor, &mut Outline), With<Button>>,
@@ -56,6 +58,7 @@ pub fn button_selection(
     }
 }
 
+/// handles controls while in the menu
 pub fn controls(
     mut player_index: ResMut<PlayerIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
@@ -85,15 +88,17 @@ pub fn controls(
     }
 }
 
+/// unloads all menu ui elements
 pub fn unload_ui(
     mut commands: Commands,
-    ui_elements: Query<Entity, With<UI>>,
+    ui_elements: Query<Entity, With<MenuUI>>,
 ){
     for entity in ui_elements{
         commands.entity(entity).despawn();
     }
 }
 
+/// loads all menu ui elements
 pub fn load_ui(
     commands: Commands,
     button_count: ResMut<ButtonCount>,

@@ -3,7 +3,7 @@ use bevy::text::FontSmoothing;
 
 use crate::MenuState;
 
-use super::{UI, ButtonIndex, ButtonCount, BaseFontSize, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
+use super::{MenuUI, ButtonIndex, ButtonCount, BaseFontSize, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
 
 //text
 const TEXT_HEIGHT_PER: f32 = 30.0;
@@ -28,7 +28,7 @@ pub fn load(
     **button_count = 1;
     //TEXT
     commands.spawn((
-        UI,
+        MenuUI,
         Node{
             width: Val::Percent(95.0),
             height: Val::Percent(TEXT_HEIGHT_PER),
@@ -57,7 +57,7 @@ pub fn load(
 
     //SUBTEXT
     commands.spawn((
-        UI,
+        MenuUI,
         Node{
             width: Val::Percent(95.0),
             height: Val::Percent(SUBTEXT_HEIGHT_PER),
@@ -86,7 +86,7 @@ pub fn load(
 
     //EXIT BUTTON
     commands.spawn((
-            UI,
+            MenuUI,
             Button,
             ButtonIndex(0),
             Node{

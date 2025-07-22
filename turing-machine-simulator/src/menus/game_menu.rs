@@ -1,8 +1,7 @@
-use bevy::text::cosmic_text::ttf_parser::Style;
-use bevy::{prelude::*, text::FontStyle};
+use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
-use crate::{menus::{BaseFontSize, ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, UI}, MenuState, GameState};
+use crate::{menus::{BaseFontSize, ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, MenuUI}, MenuState, GameState};
 //title
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
@@ -25,7 +24,7 @@ pub fn load(
     **button_count = BUTTON_TEXT.len();
     //title text
     commands.spawn((
-        UI,
+        MenuUI,
         Node{
             width: Val::Percent(100.0),
             height: Val::Percent(TITLE_HEIGHT_PER),
@@ -54,7 +53,7 @@ pub fn load(
     //make buttons
     for i in 0..BUTTON_TEXT.len(){
         commands.spawn((
-            UI,
+            MenuUI,
             Button,
             ButtonIndex(i),
             Node{
