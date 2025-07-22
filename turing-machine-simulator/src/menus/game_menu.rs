@@ -1,4 +1,5 @@
-use bevy::prelude::*;
+use bevy::text::cosmic_text::ttf_parser::Style;
+use bevy::{prelude::*, text::FontStyle};
 use bevy::text::FontSmoothing;
 
 use crate::{menus::{BaseFontSize, ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, UI}, MenuState, GameState};
@@ -35,10 +36,10 @@ pub fn load(
             ..Default::default()
         },
         BackgroundColor(Color::NONE),
-        Transform{
-            rotation: Quat::from_rotation_z(std::f32::consts::PI / -30.0),
-            ..Default::default()
-        },
+        // Transform{
+        //     rotation: Quat::from_rotation_z(std::f32::consts::PI / -30.0),
+        //     ..Default::default()
+        // },
     )).with_child((
         Text::new("Select Gamemode"),
         TextFont{

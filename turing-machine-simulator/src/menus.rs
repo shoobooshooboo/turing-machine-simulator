@@ -1,5 +1,3 @@
-use std::collections::btree_set;
-
 use bevy::prelude::*;
 use bevy::window::WindowResized;
 use crate::{AppState, GameState, MenuState, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};

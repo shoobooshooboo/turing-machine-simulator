@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
-use bevy::{prelude::*, window::{WindowResolution}};
+use bevy::{prelude::*, text::TextPlugin, window::WindowResolution};
 
 mod menus;
 
@@ -39,7 +39,7 @@ enum GameState{
 
 fn main() {
     App::new()
-    .add_plugins(DefaultPlugins.set(WindowPlugin{
+    .add_plugins((DefaultPlugins.set(WindowPlugin{
         primary_window: Some(Window{
             title: "Turing Machine Simulator!".to_string(),
             resolution: WindowResolution::new(BASE_WINDOW_WIDTH, BASE_WINDOW_HEIGHT),
@@ -47,7 +47,7 @@ fn main() {
             ..Default::default()
         }),
         ..Default::default()
-    }))
+    }), TextPlugin))
     .insert_state(MenuState::MainMenu)
     .insert_state(AppState::InMenu)
     .insert_state(GameState::None)
