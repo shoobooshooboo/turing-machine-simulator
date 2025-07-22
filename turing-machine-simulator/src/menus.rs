@@ -7,23 +7,20 @@ const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
 const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 0.75;
 
 #[derive(Component)]
-pub struct MenuUI;
+struct MenuUI;
 
 #[derive(Component, Deref, DerefMut)]
-pub struct ButtonIndex(usize);
+struct ButtonIndex(usize);
 
 #[derive(Resource, Deref, DerefMut, Default)]
-pub struct PlayerIndex(usize);
-
-#[derive(Component, Deref, DerefMut)]
-pub struct BaseFontSize(f32);
+struct PlayerIndex(usize);
 
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct ButtonCount(usize);
 
-pub mod main_menu;
-pub mod credits_menu;
-pub mod game_menu;
+mod main_menu;
+mod credits_menu;
+mod game_menu;
 
 pub struct MenuPlugin;
 
@@ -51,7 +48,7 @@ impl Plugin for MenuPlugin{
 }
 
 /// sets a button's background color and border width depending off it is selected or not
-pub fn button_selection(
+fn button_selection(
     player_index: Res<PlayerIndex>,
     mut buttons: Query<(&ButtonIndex, &mut BackgroundColor, &mut Outline), With<Button>>,
 ){
@@ -68,7 +65,7 @@ pub fn button_selection(
 }
 
 /// handles controls while in the menu
-pub fn controls(
+fn controls(
     mut player_index: ResMut<PlayerIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
     exit: EventWriter<AppExit>,
@@ -98,7 +95,7 @@ pub fn controls(
 }
 
 /// unloads all menu ui elements
-pub fn unload_ui(
+fn unload_ui(
     mut commands: Commands,
     ui_elements: Query<Entity, With<MenuUI>>,
 ){
@@ -108,7 +105,7 @@ pub fn unload_ui(
 }
 
 /// loads all menu ui elements
-pub fn load_ui(
+fn load_ui(
     commands: Commands,
     button_count: ResMut<ButtonCount>,
     menu_state: Res<State<MenuState>>,

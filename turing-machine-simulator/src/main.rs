@@ -5,8 +5,6 @@ use bevy::{prelude::*, window::{WindowResized, WindowResolution}};
 mod menus;
 mod games;
 
-use menus::*;
-
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
@@ -37,6 +35,9 @@ enum GameState{
     Sandbox,
     None,
 }
+
+#[derive(Component, Deref, DerefMut)]
+pub struct BaseFontSize(f32);
 
 fn main() {
     App::new()

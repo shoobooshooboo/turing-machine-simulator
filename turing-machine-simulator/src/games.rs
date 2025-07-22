@@ -1,14 +1,21 @@
-use bevy::{prelude::*, render::mesh::Triangle2dMeshBuilder,};
+use bevy::{prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing,};
+use crate::{BaseFontSize, AppState, GameState};
 
-use crate::{AppState, GameState};
+const CELL_SPACING_PER: f32 = 5.0;
+const VISIBLE_CELL_COUNT: u8 = 5;
+const CELL_WIDTH: f32 = 100.0 - (CELL_SPACING_PER * (VISIBLE_CELL_COUNT + 1) as f32);
+const BORDER_WIDTH_PER: f32 = 0.5;
+const MAIN_CELL_BORDER_WIDTH_PER: f32 = 1.0;
 
-pub mod sandbox;
+const TEXT_FONT_SIZE: f32 = 80.0;
+
+mod sandbox;
 
 #[derive(Component)]
-pub struct GameUI;
+struct GameUI;
 
 #[derive(Resource, Deref, DerefMut)]
-pub struct Tape{
+struct Tape{
     cells: Box<[char; 1_000]>
 }
 
@@ -35,7 +42,7 @@ impl Plugin for GamePlugin{
 }
 
 /// loads the game elements
-pub fn load_game(
+fn load_game(
     mut commands: Commands,
     tape: ResMut<Tape>,
     game_state: Res<State<GameState>>,
@@ -43,10 +50,34 @@ pub fn load_game(
     mut mats: ResMut<Assets<ColorMaterial>>,
 ){
     //loads the tape
-
+    for i in 0..VISIBLE_CELL_COUNT{
+        commands.spawn((
+            GameUI,
+            Node{
+                position_type: PositionType::Absolute,
+                top: Val::Percent(CELL_SPACING_PER),
+                left: Val::Percent(CELL_SPACING_PER * (i + 1) as f32 + CELL_WIDTH * i as f32),
+                height: Val::Percent(CELL_WIDTH),
+                width: Val::Percent(CELL_WIDTH),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..Default::default()
+            },
+            BackgroundColor(Color::NONE),
+        )).with_child((
+            Text::new("∧"),
+            TextFont{
+                font_size: TEXT_FONT_SIZE,
+                font_smoothing: FontSmoothing::AntiAliased,
+                ..Default::default()
+            },
+            BaseFontSize(TEXT_FONT_SIZE),
+            TextColor(Color::BLACK),
+            TextLayout::new_with_justify(JustifyText::Center),
+        ));
+    }
 
     //loads cursor
-    println!("spawning cursor");
     commands.spawn((
         GameUI,
         Mesh2d(meshes.add(Triangle2dMeshBuilder::new(Vec2::new(0.0, 100.0),
@@ -64,4 +95,4 @@ pub fn load_game(
 }
 
 ///unloads all game elements
-pub fn unload_game(){}
+fn unload_game(){}

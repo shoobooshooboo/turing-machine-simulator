@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
-use crate::MenuState;
+use crate::{MenuState, BaseFontSize};
 
-use super::{MenuUI, ButtonIndex, ButtonCount, BaseFontSize, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
+use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
 
 //text
 const TEXT_HEIGHT_PER: f32 = 30.0;
