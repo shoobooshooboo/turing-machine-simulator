@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy::window::WindowResized;
-use crate::{AppState, GameState, MenuState, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{AppState, GameState, MenuState};
 
 const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
 const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
@@ -26,18 +25,28 @@ pub mod main_menu;
 pub mod credits_menu;
 pub mod game_menu;
 
-/// scales all text in the world based on the window size
-pub fn scale_text(
-    mut resizes: EventReader<WindowResized>,
-    mut texts: Query<(&BaseFontSize, &mut TextFont)>
-){
-    for event in resizes.read(){
-        let height_scale = event.height / BASE_WINDOW_HEIGHT;
-        let width_scale = event.width / BASE_WINDOW_WIDTH;
-        let scale = height_scale.min(width_scale);
-        for (base, mut actual) in &mut texts{
-            actual.font_size = **base * scale;
-        }
+pub struct MenuPlugin;
+
+impl Plugin for MenuPlugin{
+    fn build(&self, app: &mut App){
+    app
+    .insert_state(MenuState::MainMenu)
+    .insert_resource(PlayerIndex::default())
+    .insert_resource(ButtonCount::default())
+    .add_systems(
+        OnEnter(AppState::InMenu),
+        load_ui
+    )
+    .add_systems(
+        OnTransition{exited: AppState::InMenu, entered: AppState::Transition},
+         unload_ui
+    )
+    .add_systems(
+    Update,
+    (
+        controls.run_if(in_state(AppState::InMenu)),
+        button_selection.run_if(in_state(AppState::InMenu)),
+    ).chain());
     }
 }
 

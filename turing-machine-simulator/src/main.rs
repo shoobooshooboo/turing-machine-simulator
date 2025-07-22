@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
-use bevy::{prelude::*, window::{WindowResolution}};
+use bevy::{prelude::*, window::{WindowResized, WindowResolution}};
 
 mod menus;
 mod games;
@@ -51,42 +51,21 @@ fn main() {
         }),
         ..Default::default()
     }))
-    .insert_state(MenuState::MainMenu)
+    .add_plugins(menus::MenuPlugin)
     .insert_state(AppState::InMenu)
-    .insert_state(GameState::None)
-    .insert_resource(PlayerIndex::default())
-    .insert_resource(ButtonCount::default())
-    .insert_resource(Tape::default())
     .add_systems(
         Startup,
         spawn_camera
-    )
-    .add_systems(
-        Update,
-        menus::scale_text
     )
     .add_systems(
         OnEnter(AppState::Transition),
         transition
     )
     .add_systems(
-        OnEnter(AppState::InMenu),
-        menus::load_ui
+        Update,
+        scale_text
     )
-    .add_systems(
-        OnTransition{exited: AppState::InMenu, entered: AppState::Transition},
-         menus::unload_ui
-    )
-    .add_systems(
-    Update,
-    (
-        menus::controls.run_if(in_state(AppState::InMenu)),
-        menus::button_selection.run_if(in_state(AppState::InMenu)).after(menus::controls),
-    ))
-    .add_systems(
-        OnEnter(AppState::InGame),
-        games::load
-    )
+    
     .run();
 }
 
@@ -103,5 +82,20 @@ fn transition(
     match **menu_state{
         MenuState::None => next_app_state.set(AppState::InGame),
         _ => next_app_state.set(AppState::InMenu),
+    }
+}
+
+/// scales all text in the world based on the window size
+pub fn scale_text(
+    mut resizes: EventReader<WindowResized>,
+    mut texts: Query<(&BaseFontSize, &mut TextFont)>
+){
+    for event in resizes.read(){
+        let height_scale = event.height / BASE_WINDOW_HEIGHT;
+        let width_scale = event.width / BASE_WINDOW_WIDTH;
+        let scale = height_scale.min(width_scale);
+        for (base, mut actual) in &mut texts{
+            actual.font_size = **base * scale;
+        }
     }
 }

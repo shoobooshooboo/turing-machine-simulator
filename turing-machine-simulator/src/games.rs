@@ -1,6 +1,6 @@
 use bevy::{image::TranscodeFormat, prelude::*, render::mesh::Triangle2dMeshBuilder, sprite::Material2d, window::PrimaryWindow};
 
-use crate::GameState;
+use crate::{AppState, GameState};
 
 pub mod sandbox;
 
@@ -17,6 +17,20 @@ impl Default for Tape{
         Self{
             cells: Box::new(['∧'; 1_000])
         }
+    }
+}
+
+pub struct GamePlugin;
+
+impl Plugin for GamePlugin{
+    fn build(&self, app: &mut App){
+        app
+        .insert_state(GameState::None)
+        .insert_resource(Tape::default())
+        .add_systems(
+        OnEnter(AppState::InGame),
+        load
+        );
     }
 }
 
