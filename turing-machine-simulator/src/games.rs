@@ -3,9 +3,9 @@ use crate::{BaseFontSize, AppState, GameState};
 
 const CELL_SPACING_PER: f32 = 5.0;
 const VISIBLE_CELL_COUNT: u8 = 5;
-const CELL_WIDTH: f32 = 100.0 - (CELL_SPACING_PER * (VISIBLE_CELL_COUNT + 1) as f32);
-const BORDER_WIDTH_PER: f32 = 0.5;
-const MAIN_CELL_BORDER_WIDTH_PER: f32 = 1.0;
+const CELL_WIDTH: f32 = (100.0 - (CELL_SPACING_PER * (VISIBLE_CELL_COUNT + 1) as f32)) / VISIBLE_CELL_COUNT as f32;
+const BORDER_WIDTH_PER: f32 = 3.0;
+const MAIN_CELL_BORDER_WIDTH_PER: f32 = 5.0;
 
 const TEXT_FONT_SIZE: f32 = 80.0;
 
@@ -57,22 +57,23 @@ fn load_game(
                 position_type: PositionType::Absolute,
                 top: Val::Percent(CELL_SPACING_PER),
                 left: Val::Percent(CELL_SPACING_PER * (i + 1) as f32 + CELL_WIDTH * i as f32),
-                height: Val::Percent(CELL_WIDTH),
-                width: Val::Percent(CELL_WIDTH),
+                height: Val::Vw(CELL_WIDTH),
+                width: Val::Vw(CELL_WIDTH),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
                 ..Default::default()
             },
             BackgroundColor(Color::NONE),
+            Outline::new(Val::Percent(BORDER_WIDTH_PER), Val::Px(0.0), Color::BLACK),
         )).with_child((
-            Text::new("∧"),
+            Text::new("_"),
             TextFont{
                 font_size: TEXT_FONT_SIZE,
                 font_smoothing: FontSmoothing::AntiAliased,
                 ..Default::default()
             },
             BaseFontSize(TEXT_FONT_SIZE),
-            TextColor(Color::BLACK),
+            TextColor(Color::WHITE),
             TextLayout::new_with_justify(JustifyText::Center),
         ));
     }
