@@ -1,5 +1,5 @@
 use bevy::{input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
-use crate::{AppState, BaseFontSize, GameState, MenuState};
+use crate::{menus::MenuState, AppState, BaseFontSize};
 
 //Tape Cells
 const CELL_COUNT: usize = 1_000_000;
@@ -13,6 +13,8 @@ const BORDER_WIDTH_PER: f32 = 3.0;
 const MAIN_CELL_BORDER_WIDTH_PER: f32 = 5.0;
 const TEXT_FONT_SIZE: f32 = 80.0;
 
+const SAVE_FILE_PATH: &'static str = "assets/saves/world";
+
 mod sandbox;
 
 #[derive(Component)]
@@ -25,6 +27,9 @@ struct Cell(i32);
 struct Tape{
     cells: Box<Vec<char>>
 }
+
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct SaveFileIndex(usize);
 
 impl Default for Tape{
     fn default() -> Self {
@@ -45,6 +50,13 @@ enum CellMode{
 #[derive(Resource, Deref, DerefMut, Default)]
 struct CursorIndex(usize);
 
+/// controls the current gamemode
+#[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum GameState{
+    Sandbox,
+    None,
+}
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin{
@@ -54,6 +66,7 @@ impl Plugin for GamePlugin{
         .insert_state(CellMode::Reading)
         .insert_resource(Tape::default())
         .insert_resource(CursorIndex::default())
+        .insert_resource(SaveFileIndex::default())
         .add_systems(
         OnEnter(AppState::InGame),
         load_ui
@@ -76,6 +89,7 @@ impl Plugin for GamePlugin{
 /// loads the game elements
 fn load_ui(
     mut commands: Commands,
+    save_file_index: Res<SaveFileIndex>,
     tape: ResMut<Tape>,
     game_state: Res<State<GameState>>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -130,7 +144,7 @@ fn load_ui(
     ));
     
     match **game_state{
-        GameState::Sandbox => sandbox::load(commands, tape),
+        GameState::Sandbox => sandbox::load(commands, save_file_index, tape),
         _ => println!("unimplemented menu"),
     }
 }
@@ -203,9 +217,7 @@ fn write_to_cell(
 
         match &e.logical_key{
             Key::Enter => {char_to_write = Some(tape[**cursor]); break;}
-            Key::Character(c) => {
-                println!("{c}");
-                char_to_write = Some(c.chars().next().unwrap())},
+            Key::Character(c) => char_to_write = Some(c.chars().next().unwrap()),
             _ => (),
         }
     }

@@ -1,7 +1,7 @@
 use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
-use crate::games::GameState;
+use crate::games::{GameState, SaveFileIndex};
 use crate::menus::MenuState;
 use crate::{BaseFontSize, menus::{ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, MenuUI}};
 //title
@@ -14,7 +14,7 @@ const BUTTON_HEIGHT_PER: f32 = 12.0;
 const BUTTON_OUTLINE_COLOR: Color = Color::BLACK;
 const BUTTON_SPACING_PER: f32 = 5.0;
 //button text
-const BUTTON_TEXT: [&'static str; 2] = ["Sandbox", "Back"];
+const BUTTON_TEXT: [&'static str; 4] = ["Save 1", "Save 2", "Save 3", "Back"];
 const BUTTON_TEXT_COLOR: Color = Color::BLACK;
 const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 
@@ -42,7 +42,7 @@ pub fn load(
         //     ..Default::default()
         // },
     )).with_child((
-        Text::new("Select Gamemode"),
+        Text::new("Sandbox Mode"),
         TextFont{
             font_size: TITLE_FONT_SIZE,
             font_smoothing: FontSmoothing::AntiAliased,
@@ -91,12 +91,13 @@ pub fn load(
 
 pub fn transition(
     player_index: ResMut<PlayerIndex>,
+    mut save_file_index: ResMut<SaveFileIndex>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-    mut _next_game_state: ResMut<NextState<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
 ){
     match **player_index{
-        0 => {next_menu_state.set(MenuState::SandboxMenu);},
-        1 => next_menu_state.set(MenuState::MainMenu),
+        0 | 1 | 2 => {next_menu_state.set(MenuState::None); next_game_state.set(GameState::Sandbox); **save_file_index = **player_index + 1; },
+        3 => next_menu_state.set(MenuState::MainMenu),
         _ => panic!("somehow went into a non-existant menu"),
     }
 }

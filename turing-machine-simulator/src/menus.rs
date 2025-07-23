@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::{AppState, GameState, MenuState};
+use crate::{games::{GameState, SaveFileIndex}, AppState};
 
 const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
 const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
@@ -21,6 +21,19 @@ pub struct ButtonCount(usize);
 mod main_menu;
 mod credits_menu;
 mod game_menu;
+mod sandbox_menu;
+
+/// controls the current menu
+#[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum MenuState{
+    MainMenu,
+    GameMenu,
+    SandboxMenu,
+    SettingsMenu,
+    CreditsMenu,
+    QuitMenu,
+    None,
+}
 
 pub struct MenuPlugin;
 
@@ -67,6 +80,7 @@ fn button_selection(
 /// handles controls while in the menu
 fn controls(
     mut player_index: ResMut<PlayerIndex>,
+    save_file_index: ResMut<SaveFileIndex>, 
     inputs: Res<ButtonInput<KeyCode>>,
     exit: EventWriter<AppExit>,
     menu_state: Res<State<MenuState>>,
@@ -89,6 +103,7 @@ fn controls(
             MenuState::MainMenu => main_menu::transition(player_index, exit, next_menu_state),
             MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_game_state),
             MenuState::CreditsMenu => credits_menu::transition(next_menu_state),
+            MenuState::SandboxMenu => sandbox_menu::transition(player_index, save_file_index, next_menu_state, next_game_state),
             _ => println!("unimplemented menu"),
         }
     }
@@ -114,6 +129,7 @@ fn load_ui(
         MenuState::MainMenu => main_menu::load(commands, button_count),
         MenuState::GameMenu => game_menu::load(commands, button_count), 
         MenuState::CreditsMenu => credits_menu::load(commands, button_count),
+        MenuState::SandboxMenu => sandbox_menu::load(commands, button_count),
         _ => print!("unimplemented menu"),
     }
 }

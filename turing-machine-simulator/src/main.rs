@@ -2,23 +2,14 @@
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
 use bevy::{prelude::*, window::{WindowResized, WindowResolution}};
 
+use crate::menus::MenuState;
+
 mod menus;
 mod games;
 
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
-
-/// controls the current menu
-#[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum MenuState{
-    MainMenu,
-    GameMenu,
-    SettingsMenu,
-    CreditsMenu,
-    QuitMenu,
-    None,
-}
 
 /// controls the current app state
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -27,13 +18,6 @@ enum AppState{
     InMenu,
     Paused,
     Transition,
-}
-
-/// controls the current gamemode
-#[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum GameState{
-    Sandbox,
-    None,
 }
 
 #[derive(Component, Deref, DerefMut)]
