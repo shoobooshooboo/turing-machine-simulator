@@ -20,11 +20,6 @@ fn main() -> io::Result<()> {
             .compile()?;
     }
 
-    let s = Path::new("target/debug/turing-machine-simulator.exe");
-    let d = Path::new("target/debug/Turing Machine Simulator!.exe");
-    if s.exists(){
-        fs::rename(s, d).expect("failed to rename executable");
-    }
     let s = Path::new("target/release/turing-machine-simulator.exe");
     let d = Path::new("target/release/Turing Machine Simulator!.exe");
     if s.exists(){

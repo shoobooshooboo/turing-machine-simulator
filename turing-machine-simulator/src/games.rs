@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing,};
+use bevy::{input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
 use crate::{AppState, BaseFontSize, GameState, MenuState};
 
 const CELL_SPACING_PER: f32 = 5.0;
@@ -31,6 +31,12 @@ impl Default for Tape{
     }
 }
 
+#[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+enum CellMode{
+    Reading,
+    Writing,
+}
+
 #[derive(Resource, Deref, DerefMut, Default)]
 struct CursorIndex(usize);
 
@@ -40,6 +46,7 @@ impl Plugin for GamePlugin{
     fn build(&self, app: &mut App){
         app
         .insert_state(GameState::None)
+        .insert_state(CellMode::Reading)
         .insert_resource(Tape::default())
         .insert_resource(CursorIndex::default())
         .add_systems(
@@ -49,6 +56,7 @@ impl Plugin for GamePlugin{
         .add_systems(
             Update,
             (
+                write_to_cell.run_if(in_state(CellMode::Writing)),
                 controls.run_if(in_state(AppState::InGame)),
                 update_cells.run_if(in_state(AppState::InGame)),
         ).chain())
@@ -131,7 +139,15 @@ fn controls(
     mut next_game_state: ResMut<NextState<GameState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
+    cell_mode: Res<State<CellMode>>,
+    mut next_cell_mode: ResMut<NextState<CellMode>>,
 ){
+    if **cell_mode == CellMode::Writing{
+        if inputs.just_pressed(KeyCode::Enter) || inputs.just_pressed(KeyCode::Escape){
+            next_cell_mode.set(CellMode::Reading);
+        }
+        return;
+    }
     let initial_cursor = **cursor;
     if inputs.just_pressed(KeyCode::ArrowLeft){
         **cursor = cursor.checked_sub(1).unwrap_or(0);
@@ -157,6 +173,42 @@ fn controls(
         next_game_state.set(GameState::None);
         next_app_state.set(AppState::Transition);
         next_menu_state.set(MenuState::GameMenu);
+    }
+
+    if inputs.just_pressed(KeyCode::Space){
+        next_cell_mode.set(CellMode::Writing);
+    }
+}
+
+fn write_to_cell(
+    cursor: Res<CursorIndex>,
+    mut tape: ResMut<Tape>,
+    mut next_cell_mode: ResMut<NextState<CellMode>>,
+    mut keyboard: EventReader<KeyboardInput>,
+){
+    if keyboard.is_empty(){
+        return;
+    }
+    //let mut is_uppercase = false;
+    let mut char_to_write = None;
+    for e in keyboard.read(){
+        if e.state == ButtonState::Released{
+            continue;
+        }
+
+        match &e.logical_key{
+            Key::Enter => {char_to_write = Some(tape[**cursor]); break;}
+            Key::Character(c) => {
+                println!("{c}");
+                char_to_write = Some(c.chars().next().unwrap())},
+            _ => (),
+        }
+    }
+
+    if let Some(c) = char_to_write{
+        //let c = if is_uppercase {c.to_ascii_uppercase()} else {c};
+        tape[**cursor] = c;
+        next_cell_mode.set(CellMode::Reading);
     }
 }
 
