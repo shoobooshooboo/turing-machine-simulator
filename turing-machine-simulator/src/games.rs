@@ -1,3 +1,5 @@
+use std::{fs, path::Path};
+
 use bevy::{input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
 use crate::{menus::MenuState, AppState, BaseFontSize};
 
@@ -29,7 +31,7 @@ struct Tape{
 }
 
 #[derive(Resource, Deref, DerefMut, Default)]
-pub struct SaveFileIndex(usize);
+pub struct SaveFileIndex(Option<usize>);
 
 impl Default for Tape{
     fn default() -> Self {
@@ -251,12 +253,34 @@ fn update_cells(
 ///unloads all game elements
 fn unload_ui(
     mut commands: Commands,
+    mut save_file_index: ResMut<SaveFileIndex>,
     mut ui_elements: Query<Entity, With<GameUI>>,
     mut tape: ResMut<Tape>,
 ){
     for entity in &mut ui_elements{
         commands.get_entity(entity).unwrap().despawn();
     }
+
+    match **save_file_index{
+        None => (),
+        Some(i) =>{
+            let mut contents = Box::new(String::new());
+            let mut empty_count = 0;
+            for &cell in tape.iter(){
+                if cell == '_'{
+                    empty_count += 1;
+                }else{
+                    contents.push_str(&"_".repeat(empty_count));
+                    empty_count = 0;
+                    contents.push(cell);
+                }
+            }
+
+            let _ = fs::write(Path::new(&format!("{}{}.sav", SAVE_FILE_PATH, i)), *contents);
+            **save_file_index = None;
+        } 
+    }
+
     for cell in tape.iter_mut(){
         *cell = DEFAULT_CELL_CHAR;
     }

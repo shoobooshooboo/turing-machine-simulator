@@ -96,7 +96,7 @@ pub fn transition(
     mut next_game_state: ResMut<NextState<GameState>>,
 ){
     match **player_index{
-        0 | 1 | 2 => {next_menu_state.set(MenuState::None); next_game_state.set(GameState::Sandbox); **save_file_index = **player_index + 1; },
+        0 | 1 | 2 => {next_menu_state.set(MenuState::None); next_game_state.set(GameState::Sandbox); **save_file_index = Some(**player_index + 1); },
         3 => next_menu_state.set(MenuState::MainMenu),
         _ => panic!("somehow went into a non-existant menu"),
     }

@@ -9,7 +9,7 @@ pub fn load(
     save_file_index: Res<SaveFileIndex>,
     mut tape: ResMut<Tape>,
 ){
-    let contents = match fs::read_to_string(Path::new(&format!("{}{}.sav", SAVE_FILE_PATH, **save_file_index))){
+    let contents = match fs::read_to_string(Path::new(&format!("{}{}.sav", SAVE_FILE_PATH, save_file_index.clone().unwrap()))){
         Ok(s) => s,
         Err(_) => "ERROR LOADING FILE".to_string(),
     };
