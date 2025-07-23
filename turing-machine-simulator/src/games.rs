@@ -1,13 +1,16 @@
 use bevy::{input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
 use crate::{AppState, BaseFontSize, GameState, MenuState};
 
+//Tape Cells
+const CELL_COUNT: usize = 1_000_000;
+const DEFAULT_CELL_CHAR: char = '_';
+
+//Visual Cells
 const CELL_SPACING_PER: f32 = 5.0;
-const CELL_COUNT: usize = 1_000;
 const VISIBLE_CELL_COUNT: i8 = 5;
 const CELL_WIDTH: f32 = (100.0 - (CELL_SPACING_PER * (VISIBLE_CELL_COUNT + 1) as f32)) / VISIBLE_CELL_COUNT as f32;
 const BORDER_WIDTH_PER: f32 = 3.0;
 const MAIN_CELL_BORDER_WIDTH_PER: f32 = 5.0;
-const DEFAULT_CELL_CHAR: char = '_';
 const TEXT_FONT_SIZE: f32 = 80.0;
 
 mod sandbox;
@@ -20,13 +23,15 @@ struct Cell(i32);
 
 #[derive(Resource, Deref, DerefMut)]
 struct Tape{
-    cells: Box<[char; CELL_COUNT]>
+    cells: Box<Vec<char>>
 }
 
 impl Default for Tape{
     fn default() -> Self {
+        let mut cells = Box::new(Vec::new());
+        cells.resize(CELL_COUNT, DEFAULT_CELL_CHAR);
         Self{
-            cells: Box::new([DEFAULT_CELL_CHAR; CELL_COUNT])
+            cells
         }
     }
 }
@@ -56,8 +61,8 @@ impl Plugin for GamePlugin{
         .add_systems(
             Update,
             (
-                write_to_cell.run_if(in_state(CellMode::Writing)),
                 controls.run_if(in_state(AppState::InGame)),
+                write_to_cell.run_if(in_state(CellMode::Writing)),
                 update_cells.run_if(in_state(AppState::InGame)),
         ).chain())
         .add_systems(
