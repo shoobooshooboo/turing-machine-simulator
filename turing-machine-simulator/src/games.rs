@@ -68,7 +68,7 @@ fn load_game(
     //reset cursor
     **cursor_index = 0;
 
-    //loads the tape
+    //loads the cells
     for i in 0..VISIBLE_CELL_COUNT{
         commands.spawn((
             GameUI,
@@ -102,20 +102,19 @@ fn load_game(
     //loads cursor
     commands.spawn((
         GameUI,
-        Mesh2d(meshes.add(Triangle2dMeshBuilder::new(Vec2::new(0.0, 100.0),
+        Mesh2d(meshes.add(
+            Triangle2dMeshBuilder::new(Vec2::new(0.0, 100.0),
             Vec2::new(-50.0, 0.0),
-            Vec2::new(50.0, 0.0),)
-        )),
+            Vec2::new(50.0, 0.0),
+        ))),
         MeshMaterial2d(mats.add(Color::BLACK)),
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+        //Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
     ));
     
     match **game_state{
         GameState::Sandbox => sandbox::load(commands, tape),
         _ => println!("unimplemented menu"),
     }
-
-
 }
 
 ///handles user inputs
