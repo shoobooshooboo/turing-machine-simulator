@@ -194,7 +194,7 @@ fn controls(
         next_menu_state.set(MenuState::GameMenu);
     }
 
-    if inputs.just_pressed(KeyCode::Space){
+    if inputs.just_pressed(KeyCode::Enter){
         next_cell_mode.set(CellMode::Writing);
     }
 }
@@ -208,7 +208,6 @@ fn write_to_cell(
     if keyboard.is_empty(){
         return;
     }
-    //let mut is_uppercase = false;
     let mut char_to_write = None;
     for e in keyboard.read(){
         if e.state == ButtonState::Released{
@@ -216,14 +215,13 @@ fn write_to_cell(
         }
 
         match &e.logical_key{
-            Key::Enter => {char_to_write = Some(tape[**cursor]); break;}
+            Key::Space => char_to_write = Some(' '),
             Key::Character(c) => char_to_write = Some(c.chars().next().unwrap()),
             _ => (),
         }
     }
 
     if let Some(c) = char_to_write{
-        //let c = if is_uppercase {c.to_ascii_uppercase()} else {c};
         tape[**cursor] = c;
         next_cell_mode.set(CellMode::Reading);
     }
