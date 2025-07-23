@@ -3,7 +3,7 @@ use crate::{BaseFontSize, AppState, GameState};
 
 const CELL_SPACING_PER: f32 = 5.0;
 const CELL_COUNT: usize = 1_000;
-const VISIBLE_CELL_COUNT: u8 = 5;
+const VISIBLE_CELL_COUNT: i8 = 5;
 const CELL_WIDTH: f32 = (100.0 - (CELL_SPACING_PER * (VISIBLE_CELL_COUNT + 1) as f32)) / VISIBLE_CELL_COUNT as f32;
 const BORDER_WIDTH_PER: f32 = 3.0;
 const MAIN_CELL_BORDER_WIDTH_PER: f32 = 5.0;
@@ -14,6 +14,9 @@ mod sandbox;
 
 #[derive(Component)]
 struct GameUI;
+
+#[derive(Component, Clone, Copy, Deref, DerefMut)]
+struct Cell(i32);
 
 #[derive(Resource, Deref, DerefMut)]
 struct Tape{
@@ -42,7 +45,14 @@ impl Plugin for GamePlugin{
         .add_systems(
         OnEnter(AppState::InGame),
         load_game
-        );
+        )
+        .add_systems(
+            Update,
+            (
+                controls.run_if(in_state(AppState::InGame)),
+                update_cells.run_if(in_state(AppState::InGame)),
+        ).chain())
+        ;
     }
 }
 
@@ -62,6 +72,7 @@ fn load_game(
     for i in 0..VISIBLE_CELL_COUNT{
         commands.spawn((
             GameUI,
+            Cell((i - VISIBLE_CELL_COUNT / 2) as i32),
             Node{
                 position_type: PositionType::Absolute,
                 top: Val::Percent(CELL_SPACING_PER),
@@ -72,6 +83,7 @@ fn load_game(
                 align_items: AlignItems::Center,
                 ..Default::default()
             },
+            Visibility::Visible,
             BackgroundColor(Color::NONE),
             Outline::new(Val::Percent(BORDER_WIDTH_PER), Val::Px(0.0), Color::BLACK),
         )).with_child((
@@ -95,20 +107,24 @@ fn load_game(
             Vec2::new(50.0, 0.0),)
         )),
         MeshMaterial2d(mats.add(Color::BLACK)),
-        Transform::from_translation(Vec3::new(0.0, -100.0, 0.0)),
+        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
     ));
     
     match **game_state{
         GameState::Sandbox => sandbox::load(commands, tape),
         _ => println!("unimplemented menu"),
     }
+
+
 }
 
 ///handles user inputs
 fn controls(
     mut cursor: ResMut<CursorIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
+    mut cells: Query<&mut Cell>,
 ){
+    let initial_cursor = **cursor;
     if inputs.just_pressed(KeyCode::ArrowLeft){
         **cursor = cursor.checked_sub(1).unwrap_or(0);
     }
@@ -117,6 +133,42 @@ fn controls(
     }
 
     **cursor = cursor.clamp(0, CELL_COUNT - 1);
+
+    let cursor_moved = initial_cursor != **cursor;
+    if cursor_moved{
+        for mut cell_index in &mut cells{
+            **cell_index += if initial_cursor < **cursor {1} else {-1};
+        }
+    }
+}
+
+fn update_cells(
+    cursor_index: Res<CursorIndex>,
+    tape: Res<Tape>,
+    mut cells: Query<(&Cell, &mut Children, &mut Visibility, &mut Outline)>,
+    mut children_query: Query<&mut Text>,
+){
+    for (&cell_index, children, mut vis, mut outline) in &mut cells{
+        match tape.get(*cell_index as usize){
+            None => {
+                *vis = Visibility::Hidden;
+            },
+            Some(&c) => {
+                *vis = Visibility::Visible;
+                for child in children.iter(){
+                    if let  Ok(mut text) = children_query.get_mut(child){
+                        text.0 = c.to_string();
+                    }
+                }
+            }
+        }
+        if *cell_index == **cursor_index as i32{
+            outline.width = Val::Percent(MAIN_CELL_BORDER_WIDTH_PER);
+        }
+        else{
+            outline.width = Val::Percent(BORDER_WIDTH_PER);
+        }
+    }
 }
 
 ///unloads all game elements
