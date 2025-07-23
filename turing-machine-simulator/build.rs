@@ -10,6 +10,10 @@ use {
 
 
 fn main() -> io::Result<()> {
+    if Ok("debug".to_owned()) == env::var("PROFILE") {
+        return Ok(());
+    }
+
     if env::var_os("CARGO_CFG_WINDOWS").is_some() {
         WindowsResource::new()
             .set_icon("assets/icon.ico")

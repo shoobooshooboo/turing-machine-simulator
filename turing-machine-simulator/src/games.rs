@@ -7,7 +7,7 @@ const VISIBLE_CELL_COUNT: i8 = 5;
 const CELL_WIDTH: f32 = (100.0 - (CELL_SPACING_PER * (VISIBLE_CELL_COUNT + 1) as f32)) / VISIBLE_CELL_COUNT as f32;
 const BORDER_WIDTH_PER: f32 = 3.0;
 const MAIN_CELL_BORDER_WIDTH_PER: f32 = 5.0;
-
+const DEFAULT_CELL_CHAR: char = '_';
 const TEXT_FONT_SIZE: f32 = 80.0;
 
 mod sandbox;
@@ -26,7 +26,7 @@ struct Tape{
 impl Default for Tape{
     fn default() -> Self {
         Self{
-            cells: Box::new(['_'; CELL_COUNT])
+            cells: Box::new([DEFAULT_CELL_CHAR; CELL_COUNT])
         }
     }
 }
@@ -85,7 +85,8 @@ fn load_game(
             },
             Visibility::Visible,
             BackgroundColor(Color::NONE),
-            Outline::new(Val::Percent(BORDER_WIDTH_PER), Val::Px(0.0), Color::BLACK),
+            Outline::new(if i == 2 {Val::Percent(MAIN_CELL_BORDER_WIDTH_PER)} else {Val::Percent(BORDER_WIDTH_PER)},
+             Val::Px(0.0), Color::BLACK),
         )).with_child((
             Text::new("_"),
             TextFont{
@@ -122,6 +123,7 @@ fn controls(
     mut cursor: ResMut<CursorIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
     mut cells: Query<&mut Cell>,
+    mut tape: ResMut<Tape>,
 ){
     let initial_cursor = **cursor;
     if inputs.just_pressed(KeyCode::ArrowLeft){
@@ -139,33 +141,29 @@ fn controls(
             **cell_index += if initial_cursor < **cursor {1} else {-1};
         }
     }
+    
+    if inputs.just_pressed(KeyCode::Backspace){
+        tape[**cursor] = DEFAULT_CELL_CHAR;
+    }
 }
 
 fn update_cells(
-    cursor_index: Res<CursorIndex>,
     tape: Res<Tape>,
-    mut cells: Query<(&Cell, &mut Children, &mut Visibility, &mut Outline)>,
+    mut cells: Query<(&Cell, &mut Children, &mut Visibility)>,
     mut children_query: Query<&mut Text>,
 ){
-    for (&cell_index, children, mut vis, mut outline) in &mut cells{
+    for (&cell_index, children, mut vis) in &mut cells{
         match tape.get(*cell_index as usize){
             None => {
                 *vis = Visibility::Hidden;
             },
             Some(&c) => {
                 *vis = Visibility::Visible;
-                for child in children.iter(){
-                    if let  Ok(mut text) = children_query.get_mut(child){
-                        text.0 = c.to_string();
-                    }
+                let child = children.iter().next().unwrap();
+                if let Ok(mut text) = children_query.get_mut(child){
+                    text.0 = c.to_string();
                 }
             }
-        }
-        if *cell_index == **cursor_index as i32{
-            outline.width = Val::Percent(MAIN_CELL_BORDER_WIDTH_PER);
-        }
-        else{
-            outline.width = Val::Percent(BORDER_WIDTH_PER);
         }
     }
 }
