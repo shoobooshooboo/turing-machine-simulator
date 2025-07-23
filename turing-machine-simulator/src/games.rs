@@ -1,5 +1,5 @@
 use bevy::{prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing,};
-use crate::{BaseFontSize, AppState, GameState};
+use crate::{AppState, BaseFontSize, GameState, MenuState};
 
 const CELL_SPACING_PER: f32 = 5.0;
 const CELL_COUNT: usize = 1_000;
@@ -44,7 +44,7 @@ impl Plugin for GamePlugin{
         .insert_resource(CursorIndex::default())
         .add_systems(
         OnEnter(AppState::InGame),
-        load_game
+        load_ui
         )
         .add_systems(
             Update,
@@ -52,12 +52,16 @@ impl Plugin for GamePlugin{
                 controls.run_if(in_state(AppState::InGame)),
                 update_cells.run_if(in_state(AppState::InGame)),
         ).chain())
+        .add_systems(
+            OnExit(AppState::InGame),
+            unload_ui
+        )
         ;
     }
 }
 
 /// loads the game elements
-fn load_game(
+fn load_ui(
     mut commands: Commands,
     tape: ResMut<Tape>,
     game_state: Res<State<GameState>>,
@@ -124,6 +128,9 @@ fn controls(
     inputs: Res<ButtonInput<KeyCode>>,
     mut cells: Query<&mut Cell>,
     mut tape: ResMut<Tape>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    mut next_menu_state: ResMut<NextState<MenuState>>,
 ){
     let initial_cursor = **cursor;
     if inputs.just_pressed(KeyCode::ArrowLeft){
@@ -144,6 +151,12 @@ fn controls(
     
     if inputs.just_pressed(KeyCode::Backspace){
         tape[**cursor] = DEFAULT_CELL_CHAR;
+    }
+
+    if inputs.just_pressed(KeyCode::Escape){
+        next_game_state.set(GameState::None);
+        next_app_state.set(AppState::Transition);
+        next_menu_state.set(MenuState::GameMenu);
     }
 }
 
@@ -169,4 +182,15 @@ fn update_cells(
 }
 
 ///unloads all game elements
-fn unload_game(){}
+fn unload_ui(
+    mut commands: Commands,
+    mut ui_elements: Query<Entity, With<GameUI>>,
+    mut tape: ResMut<Tape>,
+){
+    for entity in &mut ui_elements{
+        commands.get_entity(entity).unwrap().despawn();
+    }
+    for cell in tape.iter_mut(){
+        *cell = DEFAULT_CELL_CHAR;
+    }
+}
