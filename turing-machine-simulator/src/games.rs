@@ -61,12 +61,6 @@ impl Default for Tape{
     }
 }
 
-#[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum CellMode{
-    Reading,
-    Writing,
-}
-
 #[derive(Resource, Deref, DerefMut, Default)]
 struct CursorIndex(usize);
 
@@ -85,7 +79,6 @@ impl Plugin for GamePlugin{
     fn build(&self, app: &mut App){
         app
         .insert_state(GameState::None)
-        .insert_state(CellMode::Reading)
         .insert_resource(Tape::default())
         .insert_resource(CursorIndex::default())
         .insert_resource(SaveFileIndex::default())
@@ -101,7 +94,7 @@ impl Plugin for GamePlugin{
             Update,
             (
                 controls.run_if(in_state(AppState::InGame)),
-                write_to_cell.run_if(in_state(CellMode::Writing)),
+                write_to_cell.run_if(in_state(AppState::InGame)),
                 update_cells.run_if(in_state(AppState::InGame)),
         ).chain())
         .add_systems(
@@ -196,17 +189,9 @@ fn controls(
     mut next_game_state: ResMut<NextState<GameState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-    cell_mode: Res<State<CellMode>>,
-    mut next_cell_mode: ResMut<NextState<CellMode>>,
     mut commands: Commands,
     sounds: Res<GameSounds>,
 ){
-    if **cell_mode == CellMode::Writing{
-        if inputs.just_pressed(KeyCode::Enter) || inputs.just_pressed(KeyCode::Escape){
-            next_cell_mode.set(CellMode::Reading);
-        }
-        return;
-    }
     let initial_cursor = **cursor;
     let mut cursor_tried_move = false; 
     if inputs.just_pressed(KeyCode::ArrowLeft){
@@ -240,17 +225,11 @@ fn controls(
         next_app_state.set(AppState::Transition);
         next_menu_state.set(MenuState::GameMenu);
     }
-
-    if inputs.just_pressed(KeyCode::Enter){
-        next_cell_mode.set(CellMode::Writing);
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Select].clone()), PlaybackSettings::DESPAWN));
-    }
 }
 
 fn write_to_cell(
     cursor: Res<CursorIndex>,
     mut tape: ResMut<Tape>,
-    mut next_cell_mode: ResMut<NextState<CellMode>>,
     mut keyboard: EventReader<KeyboardInput>,
     mut commands: Commands,
     sounds: Res<GameSounds>,
@@ -273,7 +252,6 @@ fn write_to_cell(
 
     if let Some(c) = char_to_write{
         tape[**cursor] = c;
-        next_cell_mode.set(CellMode::Reading);
         commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Write].clone()), PlaybackSettings::DESPAWN));
     }
 }

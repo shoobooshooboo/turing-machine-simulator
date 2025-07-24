@@ -1,21 +1,21 @@
 #pragma code_page(65001)
 1 VERSIONINFO
-FILESUBTYPE 0x0
-FILEFLAGSMASK 0x3f
+PRODUCTVERSION 0, 5, 0, 0
+FILEOS 0x40004
 FILEFLAGS 0x0
 FILETYPE 0x1
-FILEOS 0x40004
-PRODUCTVERSION 0, 5, 0, 0
 FILEVERSION 0, 5, 0, 0
+FILESUBTYPE 0x0
+FILEFLAGSMASK 0x3f
 {
 BLOCK "StringFileInfo"
 {
 BLOCK "000004b0"
 {
-VALUE "ProductName", "turing-machine-simulator"
-VALUE "FileVersion", "0.5.0"
-VALUE "ProductVersion", "0.5.0"
 VALUE "FileDescription", "turing-machine-simulator"
+VALUE "FileVersion", "0.5.0"
+VALUE "ProductName", "turing-machine-simulator"
+VALUE "ProductVersion", "0.5.0"
 }
 }
 BLOCK "VarFileInfo" {
