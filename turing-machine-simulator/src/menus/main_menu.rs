@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
-use crate::{BaseFontSize, menus::{ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, MenuUI}, MenuState};
+use crate::{menus::{ButtonCount, ButtonIndex, MenuUI, PlayerIndex, TransitionType, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR}, BaseFontSize, MenuState};
 //title
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
@@ -95,12 +95,19 @@ pub fn transition(
     player_index: ResMut<PlayerIndex>,
     mut exit: EventWriter<AppExit>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-){
+) -> TransitionType{
     match **player_index{
         0 => {next_menu_state.set(MenuState::GameMenu)},
         1 => {next_menu_state.set(MenuState::SettingsMenu)},
         2 => {next_menu_state.set(MenuState::CreditsMenu)},
         3 => {exit.write(AppExit::Success);},
         _ => panic!("somehow went into a non-existant menu"),
+    }
+
+    if **player_index == 3{
+        TransitionType::Out
+    }
+    else{
+        TransitionType::In
     }
 }

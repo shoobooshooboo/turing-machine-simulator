@@ -44,6 +44,11 @@ struct PlayerIndex(usize);
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct ButtonCount(usize);
 
+pub enum TransitionType{
+    In,
+    Out,
+}
+
 mod main_menu;
 mod credits_menu;
 mod game_menu;
@@ -122,7 +127,6 @@ fn button_selection(
 
 /// handles controls while in the menu
 fn controls(
-    mut commands: Commands,
     mut player_index: ResMut<PlayerIndex>,
     save_file_index: ResMut<SaveFileIndex>, 
     inputs: Res<ButtonInput<KeyCode>>,
@@ -132,6 +136,7 @@ fn controls(
     mut next_app_state: ResMut<NextState<AppState>>,    
     next_game_state: ResMut<NextState<GameState>>,    
     button_count: Res<ButtonCount>,
+    mut commands: Commands,
     sounds: Res<MenuSounds>,
 ){
     if inputs.just_pressed(KeyCode::ArrowUp){
@@ -145,13 +150,16 @@ fn controls(
 
     if inputs.just_pressed(KeyCode::Enter){
         next_app_state.set(AppState::Transition);
-        match **menu_state{
+        match match **menu_state{
             MenuState::MainMenu => main_menu::transition(player_index, exit, next_menu_state),
             MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_game_state),
             MenuState::CreditsMenu => credits_menu::transition(next_menu_state),
             MenuState::SandboxMenu => sandbox_menu::transition(player_index, save_file_index, next_menu_state, next_game_state),
-            _ => println!("unimplemented menu"),
-        }
+            _ => panic!("unimplemented menu"),
+        }{
+            TransitionType::In => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Select].clone()), PlaybackSettings::DESPAWN)),
+            TransitionType::Out => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings::DESPAWN)),
+        };
     }
 }
 
