@@ -97,7 +97,7 @@ pub fn transition(
 ) -> TransitionType{
     match **player_index{
         0 | 1 | 2 => {next_menu_state.set(MenuState::None); next_game_state.set(GameState::Sandbox); **save_file_index = Some(**player_index + 1); },
-        3 => next_menu_state.set(MenuState::MainMenu),
+        3 => next_menu_state.set(MenuState::GameMenu),
         _ => panic!("somehow went into a non-existant menu"),
     }
 
@@ -107,4 +107,10 @@ pub fn transition(
     else{
         TransitionType::In
     }
+}
+
+pub fn detransition(
+    mut next_menu_state: ResMut<NextState<MenuState>>, 
+){
+    next_menu_state.set(MenuState::GameMenu);
 }

@@ -160,6 +160,16 @@ fn controls(
             TransitionType::In => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Select].clone()), PlaybackSettings::DESPAWN)),
             TransitionType::Out => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings::DESPAWN)),
         };
+    }else if inputs.just_pressed(KeyCode::Escape){
+        next_app_state.set(AppState::Transition);
+        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings::DESPAWN));
+        match **menu_state{
+            MenuState::MainMenu => main_menu::detransition(exit),
+            MenuState::GameMenu => game_menu::detransition(next_menu_state),
+            MenuState::CreditsMenu => credits_menu::detransition(next_menu_state),
+            MenuState::SandboxMenu => sandbox_menu::detransition(next_menu_state),
+            _ => panic!("unimplemented menu"),
+        }
     }
 }
 

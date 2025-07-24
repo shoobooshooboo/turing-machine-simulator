@@ -125,3 +125,9 @@ pub fn transition(
     next_menu_state.set(MenuState::MainMenu);
     TransitionType::Out
 }
+
+pub fn detransition(
+    mut next_menu_state: ResMut<NextState<MenuState>>, 
+){
+    next_menu_state.set(MenuState::MainMenu);
+}

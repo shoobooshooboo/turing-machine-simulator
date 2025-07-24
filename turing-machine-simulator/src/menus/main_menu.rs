@@ -111,3 +111,9 @@ pub fn transition(
         TransitionType::In
     }
 }
+
+pub fn detransition(
+    mut exit: EventWriter<AppExit>,
+){
+    exit.write(AppExit::Success);
+}
