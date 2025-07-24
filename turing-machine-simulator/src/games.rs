@@ -1,7 +1,6 @@
-use std::{fs, path::Path};
-
+use std::{collections::HashMap, fs, path::Path, slice::Iter};
 use bevy::{input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
-use crate::{menus::MenuState, AppState, BaseFontSize};
+use crate::{menus::MenuState, AppState, BaseFontSize, AUDIO_FILE_PREFIX};
 
 //Tape Cells
 const CELL_COUNT: usize = 1_000_000;
@@ -16,8 +15,27 @@ const MAIN_CELL_BORDER_WIDTH_PER: f32 = 5.0;
 const TEXT_FONT_SIZE: f32 = 80.0;
 
 const SAVE_FILE_PATH: &'static str = "assets/saves/world";
+const AUDIO_FILES: [&'static str; 5] = ["game-move.mp3", "game-cant-move.mp3", "game-select.mp3", "game-write.mp3", "game-delete.mp3"];
 
-mod sandbox;
+///types of in-game sound effects.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum GameSoundType{
+    Move,
+    CantMove,
+    Select,
+    Write,
+    Delete,
+}
+
+impl GameSoundType{
+    pub fn iterator() -> Iter<'static, GameSoundType>{
+        static GAME_SOUND_TYPES: [GameSoundType; AUDIO_FILES.len()] = [GameSoundType::Move, GameSoundType::CantMove, GameSoundType::Select, GameSoundType::Write, GameSoundType::Delete];
+        GAME_SOUND_TYPES.iter()
+    }
+}
+
+#[derive(Resource, Deref)]
+struct GameSounds(HashMap<GameSoundType, Handle<AudioSource>>);
 
 #[derive(Component)]
 struct GameUI;
@@ -25,13 +43,13 @@ struct GameUI;
 #[derive(Component, Clone, Copy, Deref, DerefMut)]
 struct Cell(i32);
 
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct SaveFileIndex(Option<usize>);
+
 #[derive(Resource, Deref, DerefMut)]
 struct Tape{
     cells: Box<Vec<char>>
 }
-
-#[derive(Resource, Deref, DerefMut, Default)]
-pub struct SaveFileIndex(Option<usize>);
 
 impl Default for Tape{
     fn default() -> Self {
@@ -59,6 +77,8 @@ pub enum GameState{
     None,
 }
 
+mod sandbox;
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin{
@@ -69,6 +89,10 @@ impl Plugin for GamePlugin{
         .insert_resource(Tape::default())
         .insert_resource(CursorIndex::default())
         .insert_resource(SaveFileIndex::default())
+        .add_systems(
+            Startup,
+            load_sounds,
+        )
         .add_systems(
         OnEnter(AppState::InGame),
         load_ui
@@ -86,6 +110,18 @@ impl Plugin for GamePlugin{
         )
         ;
     }
+}
+
+fn load_sounds(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+){
+    let mut sounds = HashMap::new();
+    for (&sound_type, &file_name) in GameSoundType::iterator().zip(AUDIO_FILES.iter()){
+        let path = AUDIO_FILE_PREFIX.to_owned() + file_name;
+        sounds.insert(sound_type, asset_server.load(path));
+    }
+    commands.insert_resource(GameSounds(sounds));
 }
 
 /// loads the game elements
@@ -162,6 +198,8 @@ fn controls(
     mut next_menu_state: ResMut<NextState<MenuState>>,
     cell_mode: Res<State<CellMode>>,
     mut next_cell_mode: ResMut<NextState<CellMode>>,
+    mut commands: Commands,
+    sounds: Res<GameSounds>,
 ){
     if **cell_mode == CellMode::Writing{
         if inputs.just_pressed(KeyCode::Enter) || inputs.just_pressed(KeyCode::Escape){
@@ -170,11 +208,14 @@ fn controls(
         return;
     }
     let initial_cursor = **cursor;
+    let mut cursor_tried_move = false; 
     if inputs.just_pressed(KeyCode::ArrowLeft){
         **cursor = cursor.checked_sub(1).unwrap_or(0);
+        cursor_tried_move = true;
     }
     if inputs.just_pressed(KeyCode::ArrowRight){
         **cursor += 1;
+        cursor_tried_move = true;
     }
 
     **cursor = cursor.clamp(0, CELL_COUNT - 1);
@@ -184,10 +225,14 @@ fn controls(
         for mut cell_index in &mut cells{
             **cell_index += if initial_cursor < **cursor {1} else {-1};
         }
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Move].clone()), PlaybackSettings::DESPAWN));
+    }else if cursor_tried_move{
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::CantMove].clone()), PlaybackSettings::DESPAWN));
     }
     
     if inputs.just_pressed(KeyCode::Backspace){
         tape[**cursor] = DEFAULT_CELL_CHAR;
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Delete].clone()), PlaybackSettings::DESPAWN));
     }
 
     if inputs.just_pressed(KeyCode::Escape){
@@ -198,6 +243,7 @@ fn controls(
 
     if inputs.just_pressed(KeyCode::Enter){
         next_cell_mode.set(CellMode::Writing);
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Select].clone()), PlaybackSettings::DESPAWN));
     }
 }
 
@@ -206,6 +252,8 @@ fn write_to_cell(
     mut tape: ResMut<Tape>,
     mut next_cell_mode: ResMut<NextState<CellMode>>,
     mut keyboard: EventReader<KeyboardInput>,
+    mut commands: Commands,
+    sounds: Res<GameSounds>,
 ){
     if keyboard.is_empty(){
         return;
@@ -226,6 +274,7 @@ fn write_to_cell(
     if let Some(c) = char_to_write{
         tape[**cursor] = c;
         next_cell_mode.set(CellMode::Reading);
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Write].clone()), PlaybackSettings::DESPAWN));
     }
 }
 

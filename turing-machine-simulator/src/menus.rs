@@ -9,15 +9,6 @@ const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
 const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 0.75;
 
 const AUDIO_FILES: [&'static str; 3] = ["menu-move.mp3", "menu-select.mp3", "menu-back.mp3"];
-
-///marker for ui objects of the menu
-#[derive(Component)]
-struct MenuUI;
-
-///index of a button
-#[derive(Component, Deref, DerefMut)]
-struct ButtonIndex(usize);
-
 ///types of menu sound effects.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum MenuSoundType{
@@ -32,6 +23,14 @@ impl MenuSoundType{
         MENU_SOUND_TYPES.iter()
     }
 }
+
+///marker for ui objects of the menu
+#[derive(Component)]
+struct MenuUI;
+
+///index of a button
+#[derive(Component, Deref, DerefMut)]
+struct ButtonIndex(usize);
 
 #[derive(Resource, Deref)]
 struct MenuSounds(HashMap<MenuSoundType, Handle<AudioSource>>);
