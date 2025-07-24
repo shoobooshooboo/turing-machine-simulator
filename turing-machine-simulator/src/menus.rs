@@ -124,7 +124,9 @@ fn load_ui(
     commands: Commands,
     button_count: ResMut<ButtonCount>,
     menu_state: Res<State<MenuState>>,
+    mut player_index: ResMut<PlayerIndex>,
 ){
+    **player_index = 0;
     match **menu_state{
         MenuState::MainMenu => main_menu::load(commands, button_count),
         MenuState::GameMenu => game_menu::load(commands, button_count), 
