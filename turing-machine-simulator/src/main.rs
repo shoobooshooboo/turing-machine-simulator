@@ -10,6 +10,7 @@ mod games;
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
+const AUDIO_FILE_PREFIX: &'static str = "audio\\";
 
 /// controls the current app state
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]

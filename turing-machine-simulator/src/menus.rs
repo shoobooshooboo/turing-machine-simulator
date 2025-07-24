@@ -1,20 +1,46 @@
 use bevy::prelude::*;
-use crate::{games::{GameState, SaveFileIndex}, AppState};
+use crate::{games::{GameState, SaveFileIndex}, AppState, AUDIO_FILE_PREFIX};
+use std::collections::HashMap;
+use std::slice::Iter;
 
 const BUTTON_UNSELECTED_COLOR: Color = Color::linear_rgb(0.25, 0.25, 0.25);
 const BUTTON_SELECTED_COLOR: Color = Color::linear_rgb(1.0, 1.0, 1.0);
 const BUTTON_OUTLINE_UNSELECTED_WIDTH_PER: f32 = 0.5;
 const BUTTON_OUTLINE_SELECTED_WIDTH_PER: f32 = 0.75;
 
+const AUDIO_FILES: [&'static str; 3] = ["menu-move.mp3", "menu-select.mp3", "menu-back.mp3"];
+
+///marker for ui objects of the menu
 #[derive(Component)]
 struct MenuUI;
 
+///index of a button
 #[derive(Component, Deref, DerefMut)]
 struct ButtonIndex(usize);
 
+///types of menu sound effects.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum MenuSoundType{
+    Move,
+    Select,
+    Back,
+}
+
+impl MenuSoundType{
+    pub fn iterator() -> Iter<'static, MenuSoundType>{
+        static MENU_SOUND_TYPES: [MenuSoundType; AUDIO_FILES.len()] = [MenuSoundType::Move, MenuSoundType::Select, MenuSoundType::Back];
+        MENU_SOUND_TYPES.iter()
+    }
+}
+
+#[derive(Resource, Deref)]
+struct MenuSounds(HashMap<MenuSoundType, Handle<AudioSource>>);
+
+///player's current selected button
 #[derive(Resource, Deref, DerefMut, Default)]
 struct PlayerIndex(usize);
 
+///total number of buttons in current menu
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct ButtonCount(usize);
 
@@ -44,6 +70,10 @@ impl Plugin for MenuPlugin{
     .insert_resource(PlayerIndex::default())
     .insert_resource(ButtonCount::default())
     .add_systems(
+        Startup,
+        load_audio,
+    )
+    .add_systems(
         OnEnter(AppState::InMenu),
         load_ui
     )
@@ -58,6 +88,19 @@ impl Plugin for MenuPlugin{
         button_selection.run_if(in_state(AppState::InMenu)),
     ).chain());
     }
+}
+
+fn load_audio(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+){
+    let mut sounds = HashMap::new();
+    for (&menu_sound_type, &file_name) in MenuSoundType::iterator().zip(AUDIO_FILES.iter()){
+        let path = AUDIO_FILE_PREFIX.to_owned() + file_name;
+        sounds.insert(menu_sound_type, asset_server.load(path));
+    }
+
+    commands.insert_resource(MenuSounds(sounds));
 }
 
 /// sets a button's background color and border width depending off it is selected or not
@@ -79,6 +122,7 @@ fn button_selection(
 
 /// handles controls while in the menu
 fn controls(
+    mut commands: Commands,
     mut player_index: ResMut<PlayerIndex>,
     save_file_index: ResMut<SaveFileIndex>, 
     inputs: Res<ButtonInput<KeyCode>>,
@@ -88,12 +132,14 @@ fn controls(
     mut next_app_state: ResMut<NextState<AppState>>,    
     next_game_state: ResMut<NextState<GameState>>,    
     button_count: Res<ButtonCount>,
-
+    sounds: Res<MenuSounds>,
 ){
     if inputs.just_pressed(KeyCode::ArrowUp){
         **player_index = player_index.checked_sub(1).unwrap_or(**button_count - 1);
+        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Move].clone()), PlaybackSettings::DESPAWN));
     }else if inputs.just_pressed(KeyCode::ArrowDown){
         **player_index = (**player_index + 1) % **button_count;
+        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Move].clone()), PlaybackSettings::DESPAWN));
     }
     **player_index = player_index.clamp(0, **button_count - 1);
 

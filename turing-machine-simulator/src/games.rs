@@ -118,7 +118,7 @@ fn load_ui(
             },
             Visibility::Visible,
             BackgroundColor(Color::NONE),
-            Outline::new(if i == 2 {Val::Percent(MAIN_CELL_BORDER_WIDTH_PER)} else {Val::Percent(BORDER_WIDTH_PER)},
+            Outline::new(if i == VISIBLE_CELL_COUNT / 2 {Val::Percent(MAIN_CELL_BORDER_WIDTH_PER)} else {Val::Percent(BORDER_WIDTH_PER)},
              Val::Px(0.0), Color::BLACK),
         )).with_child((
             Text::new("_"),
