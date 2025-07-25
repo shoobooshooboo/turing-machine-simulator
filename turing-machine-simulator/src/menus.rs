@@ -91,6 +91,7 @@ impl Plugin for MenuPlugin{
     (
         controls.run_if(in_state(AppState::InMenu)),
         button_selection.run_if(in_state(AppState::InMenu)),
+        settings_menu::update_sliders.run_if(in_state(MenuState::SettingsMenu)),
     ).chain());
     }
 }

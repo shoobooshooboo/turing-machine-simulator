@@ -33,11 +33,11 @@ const SLIDER_TEXT_COLOR: Color = Color::WHITE;
 const SLIDER_TEXT_FONT_SIZE: f32 = 30.0;
 const SLIDER_TEXT: [&'static str; 1] = ["Master Volume"];
 
-#[derive(Component)]
+#[derive(Component, Deref)]
 pub struct Slider(usize);
 
-#[derive(Component)]
-pub struct Thumb;
+#[derive(Component, Deref)]
+pub struct Thumb(usize);
 
 pub fn load(
     mut commands: Commands,
@@ -83,7 +83,7 @@ pub fn load(
         ))
         //slider thumb
         .with_child((
-            Thumb,
+            Thumb(i),
             Mesh2d(meshes.add(Rectangle::new(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT))),
             MeshMaterial2d(mats.add(SLIDER_COLOR)),
             Transform::from_translation(Vec3::new(0.0,0.0,1.0)),
@@ -165,4 +165,18 @@ pub fn detransition(
     mut next_menu_state: ResMut<NextState<MenuState>>, 
 ){
     next_menu_state.set(MenuState::MainMenu);
+}
+
+pub fn update_sliders(
+    player_index: Res<PlayerIndex>,
+    thumbs: Query<(&Thumb, &MeshMaterial2d<ColorMaterial>)>,
+    mut mats: ResMut<Assets<ColorMaterial>>,
+){
+    for (index,  bgc) in & thumbs{
+        if **player_index == **index{
+            mats.get_mut(bgc.id()).unwrap().color = Color::WHITE;
+        }else{
+            mats.get_mut(bgc.id()).unwrap().color = SLIDER_COLOR;
+        }
+    } 
 }
