@@ -1,6 +1,7 @@
-use bevy::prelude::*;
+use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
+use crate::{BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 use crate::{menus::{PlayerIndex, TransitionType}, BaseFontSize, MenuState};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
@@ -8,7 +9,7 @@ use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PE
 //text
 const TEXT_HEIGHT_PER: f32 = 30.0;
 const TEXT_FONT_SIZE: f32 = 100.0;
-const TEXT_SPACING_PER: f32 = 5.0;  
+const SPACING: f32 = 5.0;  
 //subtext
 const SUBTEXT_HEIGHT_PER: f32 = TEXT_HEIGHT_PER / 2.0;
 const SUBTEXT_FONT_SIZE: f32 = TEXT_FONT_SIZE / 2.0;
@@ -16,25 +17,27 @@ const SUBTEXT_FONT_SIZE: f32 = TEXT_FONT_SIZE / 2.0;
 const BUTTON_WIDTH_PER: f32 = 60.0;
 const BUTTON_HEIGHT_PER: f32 = 12.0;
 const BUTTON_OUTLINE_COLOR: Color = Color::BLACK;
-const BUTTON_SPACING_PER: f32 = 5.0;
 //button text
 const BUTTON_TEXT_COLOR: Color = Color::BLACK;
 const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 //sliders
-const SLIDER_HEIGHT: f32 = 12.0;
-const SLIDER_WIDTH: f32 = 200.0;
-const SLIDER_BAR_COLOR: Color = Color::BLACK;
+const SLIDER_HEIGHT: f32 = BASE_WINDOW_HEIGHT * 0.03;
+const SLIDER_WIDTH: f32 = BASE_WINDOW_WIDTH * 0.9 / 2.0;
+const SLIDER_COLOR: Color = Color::BLACK;
 //slider thumb
 const SLIDER_THUMB_HEIGHT: f32 = SLIDER_HEIGHT * 3.0;
 const SLIDER_THUMB_WIDTH: f32 = SLIDER_WIDTH / 100.0;
 const SLIDER_THUMB_COLOR: Color = Color::WHITE;
 //slider text
-const SLIDER_TEXT_COLOR: Color = Color::BLACK;
-const SLIDER_TEXT_FONT_SIZE: f32 = 60.0;
+const SLIDER_TEXT_COLOR: Color = Color::WHITE;
+const SLIDER_TEXT_FONT_SIZE: f32 = 30.0;
 const SLIDER_TEXT: [&'static str; 1] = ["Master Volume"];
 
 #[derive(Component)]
-pub struct Slider;
+pub struct Slider(usize);
+
+#[derive(Component)]
+pub struct Thumb;
 
 pub fn load(
     mut commands: Commands,
@@ -69,14 +72,48 @@ pub fn load(
     ));
 
     //Sliders
-    // for i in 0..SLIDER_TEXT.len(){
-    //     commands.spawn((
-    //         MenuUI,
-    //         Slider,
-            
-    //     ))
-    // }
-
+    for i in 0..SLIDER_TEXT.len(){
+        //slider bar
+        commands.spawn((
+            MenuUI,
+            Slider(i),
+            Mesh2d(meshes.add(Rectangle::new(SLIDER_WIDTH, SLIDER_HEIGHT))),
+            MeshMaterial2d(mats.add(SLIDER_COLOR)),
+            Transform::from_translation(Vec3::new(0.0, 110.0, 0.0))
+        ))
+        //slider thumb
+        .with_child((
+            Thumb,
+            Mesh2d(meshes.add(Rectangle::new(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT))),
+            MeshMaterial2d(mats.add(SLIDER_COLOR)),
+            Transform::from_translation(Vec3::new(0.0,0.0,1.0)),
+        ));
+        commands.spawn((
+            MenuUI,
+            Node{
+                position_type: PositionType::Absolute,
+                width: Val::Percent(BASE_WINDOW_WIDTH / SLIDER_WIDTH),
+                height: Val::Percent(BASE_WINDOW_HEIGHT / SLIDER_THUMB_HEIGHT),
+                top: Val::Percent((BASE_WINDOW_HEIGHT / SLIDER_THUMB_HEIGHT + SPACING) * i as f32 + TEXT_HEIGHT_PER),
+                left: Val::Percent(10.0 + BASE_WINDOW_WIDTH / SLIDER_WIDTH),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..Default::default()
+            },
+            BackgroundColor(Color::NONE),
+        )).with_child((
+            Text::new(SLIDER_TEXT[i]),
+            TextFont{
+                font_size: SLIDER_TEXT_FONT_SIZE,
+                font_smoothing: FontSmoothing::AntiAliased,
+                ..Default::default()
+            },
+            BaseFontSize(SLIDER_TEXT_FONT_SIZE),
+            TextColor(SLIDER_TEXT_COLOR),
+            TextLayout::new_with_justify(JustifyText::Center),
+        ));
+    }
+ 
     //EXIT BUTTON
     commands.spawn((
             MenuUI,
