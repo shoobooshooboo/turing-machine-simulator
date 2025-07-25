@@ -49,6 +49,7 @@ pub enum TransitionType{
 }
 
 mod main_menu;
+mod settings_menu;
 mod credits_menu;
 mod game_menu;
 mod sandbox_menu;
@@ -154,6 +155,7 @@ fn controls(
             MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_game_state),
             MenuState::CreditsMenu => credits_menu::transition(next_menu_state),
             MenuState::SandboxMenu => sandbox_menu::transition(player_index, save_file_index, next_menu_state, next_game_state),
+            MenuState::SettingsMenu => settings_menu::transition(player_index, next_menu_state),
             _ => panic!("unimplemented menu"),
         }{
             TransitionType::In => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Select].clone()), PlaybackSettings::DESPAWN)),
@@ -167,6 +169,7 @@ fn controls(
             MenuState::GameMenu => game_menu::detransition(next_menu_state),
             MenuState::CreditsMenu => credits_menu::detransition(next_menu_state),
             MenuState::SandboxMenu => sandbox_menu::detransition(next_menu_state),
+            MenuState::SettingsMenu => settings_menu::detransition(next_menu_state),
             _ => panic!("unimplemented menu"),
         }
     }
@@ -188,6 +191,8 @@ fn load_ui(
     button_count: ResMut<ButtonCount>,
     menu_state: Res<State<MenuState>>,
     mut player_index: ResMut<PlayerIndex>,
+    meshes: ResMut<Assets<Mesh>>,
+    mats: ResMut<Assets<ColorMaterial>>,
 ){
     **player_index = 0;
     match **menu_state{
@@ -195,6 +200,7 @@ fn load_ui(
         MenuState::GameMenu => game_menu::load(commands, button_count), 
         MenuState::CreditsMenu => credits_menu::load(commands, button_count),
         MenuState::SandboxMenu => sandbox_menu::load(commands, button_count),
+        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats),
         _ => print!("unimplemented menu"),
     }
 }
