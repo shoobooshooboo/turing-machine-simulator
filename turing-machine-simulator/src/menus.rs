@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use crate::{games::{GameState, SaveFileIndex}, AppState, AUDIO_FILE_PREFIX};
+use bevy::{audio::PlaybackMode, prelude::*};
+use crate::{games::{GameState, SaveFileIndex}, AppState, CurVolume, AUDIO_FILE_PREFIX};
 use std::collections::HashMap;
 use std::slice::Iter;
 
@@ -140,13 +140,15 @@ fn controls(
     button_count: Res<ButtonCount>,
     mut commands: Commands,
     sounds: Res<MenuSounds>,
+    volume: Res<CurVolume>,
 ){
+    let volume = volume.0;
     if inputs.just_pressed(KeyCode::ArrowUp){
         **player_index = player_index.checked_sub(1).unwrap_or(**button_count - 1);
-        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Move].clone()), PlaybackSettings::DESPAWN));
+        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Move].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
     }else if inputs.just_pressed(KeyCode::ArrowDown){
         **player_index = (**player_index + 1) % **button_count;
-        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Move].clone()), PlaybackSettings::DESPAWN));
+        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Move].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
     }
     **player_index = player_index.clamp(0, **button_count - 1);
 
@@ -160,12 +162,12 @@ fn controls(
             MenuState::SettingsMenu => settings_menu::transition(player_index, next_menu_state),
             _ => panic!("unimplemented menu"),
         }{
-            TransitionType::In => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Select].clone()), PlaybackSettings::DESPAWN)),
-            TransitionType::Out => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings::DESPAWN)),
+            TransitionType::In => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Select].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()})),
+            TransitionType::Out => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()})),
         };
     }else if inputs.just_pressed(KeyCode::Escape){
         next_app_state.set(AppState::Transition);
-        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings::DESPAWN));
+        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
         match **menu_state{
             MenuState::MainMenu => main_menu::detransition(exit),
             MenuState::GameMenu => game_menu::detransition(next_menu_state),
@@ -195,6 +197,7 @@ fn load_ui(
     mut player_index: ResMut<PlayerIndex>,
     meshes: ResMut<Assets<Mesh>>,
     mats: ResMut<Assets<ColorMaterial>>,
+    volume: Res<CurVolume>,
 ){
     **player_index = 0;
     match **menu_state{
@@ -202,7 +205,7 @@ fn load_ui(
         MenuState::GameMenu => game_menu::load(commands, button_count), 
         MenuState::CreditsMenu => credits_menu::load(commands, button_count),
         MenuState::SandboxMenu => sandbox_menu::load(commands, button_count),
-        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats),
+        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats, volume),
         _ => print!("unimplemented menu"),
     }
 }

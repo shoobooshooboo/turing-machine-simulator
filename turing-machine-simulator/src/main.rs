@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
-use bevy::{prelude::*, window::{WindowResized, WindowResolution}};
+use bevy::{audio::Volume, prelude::*, window::{WindowResized, WindowResolution}};
 
 use crate::menus::MenuState;
 
@@ -24,6 +24,9 @@ enum AppState{
 #[derive(Component, Deref, DerefMut)]
 pub struct BaseFontSize(f32);
 
+#[derive(Resource, Deref, DerefMut)]
+pub struct CurVolume(Volume);
+
 fn main() {
     App::new()
     .add_plugins(DefaultPlugins.set(WindowPlugin{
@@ -37,6 +40,7 @@ fn main() {
     }))
     .add_plugins(menus::MenuPlugin)
     .add_plugins(games::GamePlugin)
+    .insert_resource(CurVolume(Volume::Linear(1.0)))
     .insert_state(AppState::InMenu)
     .add_systems(
         Startup,

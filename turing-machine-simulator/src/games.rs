@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path, slice::Iter};
-use bevy::{input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
-use crate::{menus::MenuState, AppState, BaseFontSize, AUDIO_FILE_PREFIX};
+use bevy::{audio::PlaybackMode, input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
+use crate::{menus::MenuState, AppState, BaseFontSize, CurVolume, AUDIO_FILE_PREFIX};
 
 //Tape Cells
 const CELL_COUNT: usize = 1_000_000;
@@ -191,7 +191,9 @@ fn controls(
     mut next_menu_state: ResMut<NextState<MenuState>>,
     mut commands: Commands,
     sounds: Res<GameSounds>,
+    volume: Res<CurVolume>,
 ){
+    let volume = volume.0;
     let initial_cursor = **cursor;
     let mut cursor_tried_move = false; 
     if inputs.just_pressed(KeyCode::ArrowLeft){
@@ -210,14 +212,14 @@ fn controls(
         for mut cell_index in &mut cells{
             **cell_index += if initial_cursor < **cursor {1} else {-1};
         }
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Move].clone()), PlaybackSettings::DESPAWN));
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Move].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
     }else if cursor_tried_move{
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::CantMove].clone()), PlaybackSettings::DESPAWN));
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::CantMove].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
     }
     
     if inputs.just_pressed(KeyCode::Backspace){
         tape[**cursor] = DEFAULT_CELL_CHAR;
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Delete].clone()), PlaybackSettings::DESPAWN));
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Delete].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
     }
 
     if inputs.just_pressed(KeyCode::Escape){
@@ -233,7 +235,9 @@ fn write_to_cell(
     mut keyboard: EventReader<KeyboardInput>,
     mut commands: Commands,
     sounds: Res<GameSounds>,
+    volume: Res<CurVolume>,
 ){
+    let volume = volume.0;
     if keyboard.is_empty(){
         return;
     }
@@ -252,7 +256,7 @@ fn write_to_cell(
 
     if let Some(c) = char_to_write{
         tape[**cursor] = c;
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Write].clone()), PlaybackSettings::DESPAWN));
+        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Write].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
     }
 }
 

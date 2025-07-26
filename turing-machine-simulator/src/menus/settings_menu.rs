@@ -1,7 +1,8 @@
+use bevy::audio::Volume;
 use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
-use crate::{BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{CurVolume, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 use crate::{menus::{PlayerIndex, TransitionType}, BaseFontSize, MenuState};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
@@ -47,6 +48,7 @@ pub fn load(
     mut button_count: ResMut<ButtonCount>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<ColorMaterial>>,
+    volume: Res<CurVolume>,
 ){
     **button_count = SLIDER_TEXT.len() + 1;
     //TEXT
@@ -86,7 +88,7 @@ pub fn load(
         ))
         //slider thumb
         .with_child((
-            Thumb{index: i, location: 1.0},
+            Thumb{index: i, location: volume.to_linear()},
             Mesh2d(meshes.add(Rectangle::new(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT))),
             MeshMaterial2d(mats.add(SLIDER_COLOR)),
             Transform::from_translation(Vec3::new(0.0,0.0,1.0)),
@@ -190,6 +192,7 @@ pub fn slider_controls(
     inputs: Res<ButtonInput<KeyCode>>,
     mut thumbs: Query<&mut Thumb>,
     time: Res<Time>,
+    mut volume: ResMut<CurVolume>,
 ){
     let dt = time.delta_secs();
     if inputs.pressed(KeyCode::ArrowLeft){
@@ -197,6 +200,7 @@ pub fn slider_controls(
             if t.index == **player_index{
                 t.location -= dt;
                 t.location = t.location.clamp(0.0, 1.0);
+                volume.0 = Volume::Linear(t.location);
                 break;
             }
         }      
@@ -206,8 +210,10 @@ pub fn slider_controls(
             if t.index == **player_index{
                 t.location += dt;
                 t.location = t.location.clamp(0.0, 1.0);
+                volume.0 = Volume::Linear(t.location);
                 break;
             }
         }      
     }
+
 }
