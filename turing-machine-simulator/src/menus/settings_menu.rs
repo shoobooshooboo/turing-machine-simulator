@@ -176,7 +176,7 @@ pub fn update_sliders(
     mut mats: ResMut<Assets<ColorMaterial>>,
 ){
     for (thumb,  color, mut transform) in &mut thumbs{
-        transform.translation.x = SLIDER_WIDTH / 2.0 * thumb.location;
+        transform.translation.x = SLIDER_WIDTH * (thumb.location - 0.5);
         if **player_index == thumb.index{
             mats.get_mut(color.id()).unwrap().color = Color::WHITE;
         }else{
@@ -185,3 +185,29 @@ pub fn update_sliders(
     } 
 }
 
+pub fn slider_controls(
+    player_index: Res<PlayerIndex>,
+    inputs: Res<ButtonInput<KeyCode>>,
+    mut thumbs: Query<&mut Thumb>,
+    time: Res<Time>,
+){
+    let dt = time.delta_secs();
+    if inputs.pressed(KeyCode::ArrowLeft){
+        for mut t in &mut thumbs{
+            if t.index == **player_index{
+                t.location -= dt;
+                t.location = t.location.clamp(0.0, 1.0);
+                break;
+            }
+        }      
+    }
+    if inputs.pressed(KeyCode::ArrowRight){
+        for mut t in &mut thumbs{
+            if t.index == **player_index{
+                t.location += dt;
+                t.location = t.location.clamp(0.0, 1.0);
+                break;
+            }
+        }      
+    }
+}
