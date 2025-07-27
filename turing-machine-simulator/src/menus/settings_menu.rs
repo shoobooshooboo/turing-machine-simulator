@@ -2,7 +2,7 @@ use bevy::audio::Volume;
 use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
-use crate::{CurVolume, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{CurVolume, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 use crate::{menus::{PlayerIndex, TransitionType}, BaseFontSize, MenuState};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
@@ -49,6 +49,7 @@ pub fn load(
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<ColorMaterial>>,
     volume: Res<CurVolume>,
+    font: Res<DefaultFont>,
 ){
     **button_count = SLIDER_TEXT.len() + 1;
     //TEXT
@@ -67,6 +68,7 @@ pub fn load(
     )).with_child((
         Text::new("Settings"),
         TextFont{
+            font: font.0.clone(),
             font_size: TEXT_FONT_SIZE,
             font_smoothing: FontSmoothing::AntiAliased,
             ..Default::default()
@@ -109,6 +111,7 @@ pub fn load(
         )).with_child((
             Text::new(SLIDER_TEXT[i]),
             TextFont{
+                font: font.0.clone(),
                 font_size: SLIDER_TEXT_FONT_SIZE,
                 font_smoothing: FontSmoothing::AntiAliased,
                 ..Default::default()
@@ -144,6 +147,7 @@ pub fn load(
         )).with_child((
             Text::new("Back"),
             TextFont {
+                font: font.0.clone(),
                 font_size: BUTTON_TEXT_FONT_SIZE,
                 font_smoothing: FontSmoothing::AntiAliased,
                 ..Default::default()

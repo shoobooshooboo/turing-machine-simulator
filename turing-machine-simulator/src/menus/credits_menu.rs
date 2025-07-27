@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
-use crate::{menus::TransitionType, BaseFontSize, MenuState};
+use crate::{menus::TransitionType, BaseFontSize, DefaultFont, MenuState};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
 
@@ -24,6 +24,7 @@ const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 pub fn load(
     mut commands: Commands,
     mut button_count: ResMut<ButtonCount>,
+    font: Res<DefaultFont>,
 ){
     **button_count = 1;
     //TEXT
@@ -46,6 +47,7 @@ pub fn load(
     )).with_child((
         Text::new("Everything: Noel vanSchaick"),
         TextFont{
+            font: font.0.clone(),
             font_size: TEXT_FONT_SIZE,
             font_smoothing: FontSmoothing::AntiAliased,
             ..Default::default()
@@ -75,6 +77,7 @@ pub fn load(
     )).with_child((
         Text::new("Enabler: H Hays"),
         TextFont{
+            font: font.0.clone(),
             font_size: SUBTEXT_FONT_SIZE,
             font_smoothing: FontSmoothing::AntiAliased,
             ..Default::default()
@@ -109,6 +112,7 @@ pub fn load(
         )).with_child((
             Text::new("Back"),
             TextFont {
+                font: font.0.clone(),
                 font_size: BUTTON_TEXT_FONT_SIZE,
                 font_smoothing: FontSmoothing::AntiAliased,
                 ..Default::default()

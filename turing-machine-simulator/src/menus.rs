@@ -1,5 +1,5 @@
 use bevy::{audio::PlaybackMode, prelude::*};
-use crate::{games::{GameState, SaveFileIndex}, AppState, CurVolume, AUDIO_FILE_PREFIX};
+use crate::{games::{GameState, SaveFileIndex}, AppState, CurVolume, DefaultFont, AUDIO_FILE_PREFIX};
 use std::collections::HashMap;
 use std::slice::Iter;
 
@@ -198,14 +198,15 @@ fn load_ui(
     meshes: ResMut<Assets<Mesh>>,
     mats: ResMut<Assets<ColorMaterial>>,
     volume: Res<CurVolume>,
+    font: Res<DefaultFont>,
 ){
     **player_index = 0;
     match **menu_state{
-        MenuState::MainMenu => main_menu::load(commands, button_count),
-        MenuState::GameMenu => game_menu::load(commands, button_count), 
-        MenuState::CreditsMenu => credits_menu::load(commands, button_count),
-        MenuState::SandboxMenu => sandbox_menu::load(commands, button_count),
-        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats, volume),
+        MenuState::MainMenu => main_menu::load(commands, button_count, font),
+        MenuState::GameMenu => game_menu::load(commands, button_count, font), 
+        MenuState::CreditsMenu => credits_menu::load(commands, button_count, font),
+        MenuState::SandboxMenu => sandbox_menu::load(commands, button_count, font),
+        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats, volume, font),
         _ => print!("unimplemented menu"),
     }
 }

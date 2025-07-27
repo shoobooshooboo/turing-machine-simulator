@@ -3,6 +3,7 @@ use bevy::text::FontSmoothing;
 
 use crate::games::GameState;
 use crate::menus::{MenuState, TransitionType};
+use crate::DefaultFont;
 use crate::{BaseFontSize, menus::{ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, MenuUI}};
 //title
 const TITLE_HEIGHT_PER: f32 = 30.0;
@@ -22,6 +23,7 @@ const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 pub fn load(
     mut commands: Commands,
     mut button_count: ResMut<ButtonCount>,
+    font: Res<DefaultFont>,
 ){
     **button_count = BUTTON_TEXT.len();
     //title text
@@ -44,6 +46,7 @@ pub fn load(
     )).with_child((
         Text::new("Select Gamemode"),
         TextFont{
+            font: font.0.clone(),
             font_size: TITLE_FONT_SIZE,
             font_smoothing: FontSmoothing::AntiAliased,
             ..Default::default()
@@ -78,6 +81,7 @@ pub fn load(
         )).with_child((
             Text::new(BUTTON_TEXT[i]),
             TextFont {
+                font: font.0.clone(),
                 font_size: BUTTON_TEXT_FONT_SIZE,
                 font_smoothing: FontSmoothing::AntiAliased,
                 ..Default::default()

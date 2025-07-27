@@ -45,7 +45,7 @@ fn main() {
     .add_plugins(menus::MenuPlugin)
     .add_plugins(games::GamePlugin)
     .insert_resource(CurVolume(Volume::Linear(1.0)))
-    .insert_state(AppState::InMenu)
+    .insert_state(AppState::Transition)
     .add_systems(
         Startup,
         setup

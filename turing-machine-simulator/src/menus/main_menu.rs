@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
-use crate::{menus::{ButtonCount, ButtonIndex, MenuUI, PlayerIndex, TransitionType, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR}, BaseFontSize, MenuState};
+use crate::{menus::{ButtonCount, ButtonIndex, MenuUI, PlayerIndex, TransitionType, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR}, BaseFontSize, DefaultFont, MenuState};
 //title
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
@@ -20,6 +20,7 @@ const BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
 pub fn load(
     mut commands: Commands,
     mut button_count: ResMut<ButtonCount>,
+    font: Res<DefaultFont>,
 ){
     **button_count = BUTTON_TEXT.len();
     //title text
@@ -42,6 +43,7 @@ pub fn load(
     )).with_child((
         Text::new("Turing Machine Simulator!"),
         TextFont{
+            font: font.0.clone(),
             font_size: TITLE_FONT_SIZE,
             font_smoothing: FontSmoothing::AntiAliased,
             ..Default::default()
@@ -80,6 +82,7 @@ pub fn load(
         )).with_child((
             Text::new(BUTTON_TEXT[i]),
             TextFont {
+                font: font.0.clone(),
                 font_size: BUTTON_TEXT_FONT_SIZE,
                 font_smoothing: FontSmoothing::AntiAliased,
                 ..Default::default()
