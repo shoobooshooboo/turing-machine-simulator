@@ -11,6 +11,7 @@ const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
 const AUDIO_FILE_PREFIX: &'static str = "audio\\";
+const FONT_FILE: &'static str = "dos_font.ttf";
 
 /// controls the current app state
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -26,6 +27,9 @@ pub struct BaseFontSize(f32);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct CurVolume(Volume);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct DefaultFont(Handle<Font>);
 
 fn main() {
     App::new()
@@ -58,10 +62,14 @@ fn main() {
     .run();
 }
 
+///spawns camera and loads default font
 fn setup(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ){
     commands.spawn(Camera2d::default());
+    let font = asset_server.load(FONT_FILE);
+    commands.insert_resource(DefaultFont(font));
 }
 
 fn transition(
