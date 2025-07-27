@@ -44,7 +44,7 @@ fn main() {
     .insert_state(AppState::InMenu)
     .add_systems(
         Startup,
-        spawn_camera
+        setup
     )
     .add_systems(
         OnEnter(AppState::Transition),
@@ -58,7 +58,7 @@ fn main() {
     .run();
 }
 
-fn spawn_camera(
+fn setup(
     mut commands: Commands,
 ){
     commands.spawn(Camera2d::default());
