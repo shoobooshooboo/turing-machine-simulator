@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path, slice::Iter};
 use bevy::{audio::PlaybackMode, input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
-use crate::{menus::MenuState, AppState, BaseFontSize, CurVolume, AUDIO_FILE_PREFIX};
+use crate::{menus::MenuState, AppState, BaseFontSize, CurVolume, DefaultFont, AUDIO_FILE_PREFIX};
 
 //Tape Cells
 const CELL_COUNT: usize = 1_000_000;
@@ -125,6 +125,7 @@ fn load_ui(
     game_state: Res<State<GameState>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<ColorMaterial>>,
+    font: Res<DefaultFont>,
     mut cursor_index: ResMut<CursorIndex>,
 ){
     //reset cursor
@@ -152,6 +153,7 @@ fn load_ui(
         )).with_child((
             Text::new("_"),
             TextFont{
+                font: font.0.clone(),
                 font_size: TEXT_FONT_SIZE,
                 font_smoothing: FontSmoothing::AntiAliased,
                 ..Default::default()
