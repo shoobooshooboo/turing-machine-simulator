@@ -138,7 +138,7 @@ pub fn load(
                 ..Default::default()
             },
             BackgroundColor(BUTTON_UNSELECTED_COLOR),
-            BorderRadius::all(Val::VMax(5.0)),
+            // BorderRadius::all(Val::VMax(5.0)),
             Outline{
                 color: BUTTON_OUTLINE_COLOR,
                 width: Val::Percent(BUTTON_OUTLINE_UNSELECTED_WIDTH_PER),
