@@ -58,9 +58,11 @@ fn main() {
     )
     .add_systems(
         Update,
-        scale_text
+        (
+            scale_text,
+            save_setting,
+        )
     )
-    
     .run();
 }
 
@@ -120,4 +122,14 @@ pub fn scale_text(
             actual.font_size = **base * scale;
         }
     }
+}
+
+pub fn save_setting(
+    exit: EventReader<AppExit>,
+    volume: Res<CurVolume>,
+){
+    if exit.is_empty(){ return; }
+    let contents = "volume ".to_string() + &volume.0.to_linear().to_string();
+
+    let _ = fs::write(SETTINGS_FILE, contents);
 }
