@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
+use std::{fs, path::Path};
+
 use bevy::{audio::Volume, prelude::*, window::{WindowResized, WindowResolution}};
 
 use crate::menus::MenuState;
@@ -12,6 +14,7 @@ const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
 const AUDIO_FILE_PREFIX: &'static str = "audio\\";
 const FONT_FILE: &'static str = "dos_font.ttf";
+const SETTINGS_FILE: &'static str = "assets\\saves\\settings";
 
 /// controls the current app state
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -44,7 +47,6 @@ fn main() {
     }))
     .add_plugins(menus::MenuPlugin)
     .add_plugins(games::GamePlugin)
-    .insert_resource(CurVolume(Volume::Linear(1.0)))
     .insert_state(AppState::Transition)
     .add_systems(
         Startup,
@@ -62,7 +64,7 @@ fn main() {
     .run();
 }
 
-///spawns camera and loads default font
+///spawns camera and loads default font and settings
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -70,6 +72,29 @@ fn setup(
     commands.spawn(Camera2d::default());
     let font = asset_server.load(FONT_FILE);
     commands.insert_resource(DefaultFont(font));
+
+    commands.insert_resource(CurVolume(Volume::Linear(1.0)));
+
+    let contents = fs::read_to_string(Path::new(SETTINGS_FILE)).unwrap_or_default();
+    for line in contents.lines(){
+        let line: Vec<&str> = line.split_ascii_whitespace().collect();
+        let identifier = match line.get(0){
+            Some(s) => s.to_lowercase(),
+            None => continue,
+        };
+        let value: f32 = match line.get(1){
+            Some(s) => match s.parse(){
+                    Ok(v) => v,
+                    Err(_) => continue,
+                },
+            None => continue,
+        };
+
+        match identifier.as_str(){
+            "volume" => commands.insert_resource(CurVolume(Volume::Linear(value))),
+            _ => (),
+        }
+    }
 }
 
 fn transition(
