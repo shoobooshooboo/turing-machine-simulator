@@ -1,4 +1,5 @@
 use bevy::{audio::PlaybackMode, prelude::*};
+use crate::games::{GameState, SaveFileIndex};
 use crate::{AppState, CurVolume, DefaultFont, AUDIO_FILE_PREFIX};
 use std::collections::HashMap;
 use std::slice::Iter;
@@ -99,11 +100,7 @@ impl Plugin for MenuPlugin{
         settings_menu::slider_controls.run_if(in_state(MenuState::SettingsMenu)),
         ).chain(),
         play_menu_move_sound,
-        credits_menu::transition.run_if(in_state(MenuState::CreditsMenu)),
-        sandbox_menu::transition.run_if(in_state(MenuState::SandboxMenu)),
-        settings_menu::transition.run_if(in_state(MenuState::SettingsMenu)),
-        main_menu::transition.run_if(in_state(MenuState::MainMenu)),
-        game_menu::transition.run_if(in_state(MenuState::GameMenu)),
+        transition_dispatcher,
     ).run_if(in_state(AppState::InMenu)));
     }
 }
@@ -187,7 +184,7 @@ fn unload_ui(
 }
 
 /// loads all menu ui elements
-fn load_ui(
+fn load_ui( 
     commands: Commands,
     button_count: ResMut<ButtonCount>,
     menu_state: Res<State<MenuState>>,
@@ -223,5 +220,27 @@ fn play_menu_move_sound(
                 ..Default::default()
             }
         ));
+    }
+}
+
+fn transition_dispatcher(
+    mut menu_transition: EventReader<MenuTransitionEvent>,
+    player_index: ResMut<PlayerIndex>,
+    menu_state: Res<State<MenuState>>,
+    next_menu_state: ResMut<NextState<MenuState>>,
+    next_game_state: ResMut<NextState<GameState>>,
+    next_app_state: ResMut<NextState<AppState>>,
+    exit: EventWriter<AppExit>,
+    save_file_index: ResMut<SaveFileIndex>,
+){
+    if menu_transition.is_empty() {return;}
+    menu_transition.clear();
+    match **menu_state{
+        MenuState::CreditsMenu => credits_menu::transition(next_menu_state, next_app_state),
+        MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_app_state),
+        MenuState::MainMenu => main_menu::transition(player_index, exit, next_menu_state, next_app_state),
+        MenuState::SandboxMenu => sandbox_menu::transition(player_index, save_file_index, next_menu_state, next_game_state, next_app_state),
+        MenuState::SettingsMenu => settings_menu::transition(player_index, next_menu_state, next_app_state),
+        _ => (),
     }
 }

@@ -2,7 +2,7 @@ use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
 use crate::games::{GameState, SaveFileIndex};
-use crate::menus::{MenuState, MenuTransitionEvent};
+use crate::menus::{MenuState};
 use crate::{AppState, DefaultFont};
 use crate::{BaseFontSize, menus::{ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, MenuUI}};
 //title
@@ -94,16 +94,12 @@ pub fn load(
 }
 
 pub fn transition(
-    mut menu_transition: EventReader<MenuTransitionEvent>,
     player_index: ResMut<PlayerIndex>,
     mut save_file_index: ResMut<SaveFileIndex>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
 ){
-    if menu_transition.is_empty() {return;}
-    menu_transition.clear();
-
     match **player_index{
         0 | 1 | 2 => {next_menu_state.set(MenuState::None); next_game_state.set(GameState::Sandbox); **save_file_index = Some(**player_index + 1); },
         3 => next_menu_state.set(MenuState::GameMenu),
