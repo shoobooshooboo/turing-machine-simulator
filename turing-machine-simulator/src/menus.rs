@@ -48,6 +48,9 @@ pub enum TransitionType{
     Out,
 }
 
+#[derive(Event, Deref)]
+struct PlayMenuSoundEvent(MenuSoundType);
+
 mod main_menu;
 mod settings_menu;
 mod credits_menu;
@@ -74,6 +77,7 @@ impl Plugin for MenuPlugin{
     .insert_state(MenuState::MainMenu)
     .insert_resource(PlayerIndex::default())
     .insert_resource(ButtonCount::default())
+    .add_event::<PlayMenuSoundEvent>()
     .add_systems(
         Startup,
         load_audio,
@@ -89,11 +93,14 @@ impl Plugin for MenuPlugin{
     .add_systems(
     Update,
     (
-        controls.run_if(in_state(AppState::InMenu)),
-        button_selection.run_if(in_state(AppState::InMenu)),
+        (
+        controls,
+        button_selection,
         settings_menu::update_sliders.run_if(in_state(MenuState::SettingsMenu)),
         settings_menu::slider_controls.run_if(in_state(MenuState::SettingsMenu)),
-    ).chain());
+        ).chain(),
+        play_menu_move_sound,
+    ).run_if(in_state(AppState::InMenu)));
     }
 }
 
@@ -138,17 +145,14 @@ fn controls(
     mut next_app_state: ResMut<NextState<AppState>>,    
     next_game_state: ResMut<NextState<GameState>>,    
     button_count: Res<ButtonCount>,
-    mut commands: Commands,
-    sounds: Res<MenuSounds>,
-    volume: Res<CurVolume>,
+    mut sound_player: EventWriter<PlayMenuSoundEvent>,
 ){
-    let volume = volume.0;
     if inputs.just_pressed(KeyCode::ArrowUp){
         **player_index = player_index.checked_sub(1).unwrap_or(**button_count - 1);
-        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Move].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
+        sound_player.write(PlayMenuSoundEvent(MenuSoundType::Move));
     }else if inputs.just_pressed(KeyCode::ArrowDown){
         **player_index = (**player_index + 1) % **button_count;
-        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Move].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
+        sound_player.write(PlayMenuSoundEvent(MenuSoundType::Move));
     }
     **player_index = player_index.clamp(0, **button_count - 1);
 
@@ -162,12 +166,12 @@ fn controls(
             MenuState::SettingsMenu => settings_menu::transition(player_index, next_menu_state),
             _ => panic!("unimplemented menu"),
         }{
-            TransitionType::In => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Select].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()})),
-            TransitionType::Out => commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()})),
+            TransitionType::In => sound_player.write(PlayMenuSoundEvent(MenuSoundType::Select)),
+            TransitionType::Out => sound_player.write(PlayMenuSoundEvent(MenuSoundType::Back)),
         };
     }else if inputs.just_pressed(KeyCode::Escape){
         next_app_state.set(AppState::Transition);
-        commands.spawn((AudioPlayer(sounds[&MenuSoundType::Back].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
+        sound_player.write(PlayMenuSoundEvent(MenuSoundType::Back));
         match **menu_state{
             MenuState::MainMenu => main_menu::detransition(exit),
             MenuState::GameMenu => game_menu::detransition(next_menu_state),
@@ -208,5 +212,23 @@ fn load_ui(
         MenuState::SandboxMenu => sandbox_menu::load(commands, button_count, font),
         MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats, volume, font),
         _ => print!("unimplemented menu"),
+    }
+}
+
+fn play_menu_move_sound(
+    mut sound_events: EventReader<PlayMenuSoundEvent>,
+    mut commands: Commands,
+    volume: Res<CurVolume>,
+    sounds: Res<MenuSounds>,
+){
+    for sound_type in sound_events.read(){
+        commands.spawn((
+            AudioPlayer(sounds[sound_type].clone()), 
+            PlaybackSettings{
+                mode: PlaybackMode::Despawn,
+                volume: **volume, 
+                ..Default::default()
+            }
+        ));
     }
 }
