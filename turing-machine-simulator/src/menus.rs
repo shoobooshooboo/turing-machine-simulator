@@ -1,5 +1,5 @@
 use bevy::{audio::PlaybackMode, prelude::*};
-use crate::{games::{GameState, SaveFileIndex}, AppState, CurVolume, DefaultFont, AUDIO_FILE_PREFIX};
+use crate::{AppState, CurVolume, DefaultFont, AUDIO_FILE_PREFIX};
 use std::collections::HashMap;
 use std::slice::Iter;
 
@@ -43,13 +43,11 @@ struct PlayerIndex(usize);
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct ButtonCount(usize);
 
-pub enum TransitionType{
-    In,
-    Out,
-}
-
 #[derive(Event, Deref)]
 struct PlayMenuSoundEvent(MenuSoundType);
+
+#[derive(Event)]
+struct MenuTransitionEvent;
 
 mod main_menu;
 mod settings_menu;
@@ -78,6 +76,7 @@ impl Plugin for MenuPlugin{
     .insert_resource(PlayerIndex::default())
     .insert_resource(ButtonCount::default())
     .add_event::<PlayMenuSoundEvent>()
+    .add_event::<MenuTransitionEvent>()
     .add_systems(
         Startup,
         load_audio,
@@ -100,6 +99,11 @@ impl Plugin for MenuPlugin{
         settings_menu::slider_controls.run_if(in_state(MenuState::SettingsMenu)),
         ).chain(),
         play_menu_move_sound,
+        credits_menu::transition.run_if(in_state(MenuState::CreditsMenu)),
+        sandbox_menu::transition.run_if(in_state(MenuState::SandboxMenu)),
+        settings_menu::transition.run_if(in_state(MenuState::SettingsMenu)),
+        main_menu::transition.run_if(in_state(MenuState::MainMenu)),
+        game_menu::transition.run_if(in_state(MenuState::GameMenu)),
     ).run_if(in_state(AppState::InMenu)));
     }
 }
@@ -137,15 +141,14 @@ fn button_selection(
 /// handles controls while in the menu
 fn controls(
     mut player_index: ResMut<PlayerIndex>,
-    save_file_index: ResMut<SaveFileIndex>, 
     inputs: Res<ButtonInput<KeyCode>>,
     exit: EventWriter<AppExit>,
     menu_state: Res<State<MenuState>>,
     next_menu_state: ResMut<NextState<MenuState>>,
-    mut next_app_state: ResMut<NextState<AppState>>,    
-    next_game_state: ResMut<NextState<GameState>>,    
+    mut next_app_state: ResMut<NextState<AppState>>,
     button_count: Res<ButtonCount>,
     mut sound_player: EventWriter<PlayMenuSoundEvent>,
+    mut menu_transitioner: EventWriter<MenuTransitionEvent>,
 ){
     if inputs.just_pressed(KeyCode::ArrowUp){
         **player_index = player_index.checked_sub(1).unwrap_or(**button_count - 1);
@@ -157,18 +160,8 @@ fn controls(
     **player_index = player_index.clamp(0, **button_count - 1);
 
     if inputs.just_pressed(KeyCode::Enter){
-        next_app_state.set(AppState::Transition);
-        match match **menu_state{
-            MenuState::MainMenu => main_menu::transition(player_index, exit, next_menu_state),
-            MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_game_state),
-            MenuState::CreditsMenu => credits_menu::transition(next_menu_state),
-            MenuState::SandboxMenu => sandbox_menu::transition(player_index, save_file_index, next_menu_state, next_game_state),
-            MenuState::SettingsMenu => settings_menu::transition(player_index, next_menu_state),
-            _ => panic!("unimplemented menu"),
-        }{
-            TransitionType::In => sound_player.write(PlayMenuSoundEvent(MenuSoundType::Select)),
-            TransitionType::Out => sound_player.write(PlayMenuSoundEvent(MenuSoundType::Back)),
-        };
+        menu_transitioner.write(MenuTransitionEvent);
+        sound_player.write(PlayMenuSoundEvent(MenuSoundType::Select));
     }else if inputs.just_pressed(KeyCode::Escape){
         next_app_state.set(AppState::Transition);
         sound_player.write(PlayMenuSoundEvent(MenuSoundType::Back));

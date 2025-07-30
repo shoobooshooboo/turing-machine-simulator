@@ -2,8 +2,9 @@ use bevy::audio::Volume;
 use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
-use crate::{CurVolume, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
-use crate::{menus::{PlayerIndex, TransitionType}, BaseFontSize, MenuState};
+use crate::menus::MenuTransitionEvent;
+use crate::{AppState, CurVolume, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{menus::{PlayerIndex}, BaseFontSize, MenuState};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
 
@@ -159,15 +160,18 @@ pub fn load(
 }
 
 pub fn transition(
+    mut menu_transition: EventReader<MenuTransitionEvent>,
     player_index: ResMut<PlayerIndex>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-) -> TransitionType{
+    mut next_app_state: ResMut<NextState<AppState>>,
+){
+    if menu_transition.is_empty() {return;}
+    menu_transition.clear();
+
     if **player_index == SLIDER_TEXT.len(){ 
         next_menu_state.set(MenuState::MainMenu);
-        TransitionType::Out
-    }else{
-        TransitionType::In
     }
+    next_app_state.set(AppState::Transition);
 }
 
 pub fn detransition(

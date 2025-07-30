@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
-use crate::{menus::{ButtonCount, ButtonIndex, MenuUI, PlayerIndex, TransitionType, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR}, BaseFontSize, DefaultFont, MenuState};
+use crate::{menus::{ButtonCount, ButtonIndex, MenuTransitionEvent, MenuUI, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR}, AppState, BaseFontSize, DefaultFont, MenuState};
 //title
 const TITLE_HEIGHT_PER: f32 = 30.0;
 const TITLE_WIDTH_PER: f32 = 90.0;
@@ -95,10 +95,15 @@ pub fn load(
 }
 
 pub fn transition(
+    mut menu_transition: EventReader<MenuTransitionEvent>,
     player_index: ResMut<PlayerIndex>,
     mut exit: EventWriter<AppExit>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-) -> TransitionType{
+    mut next_app_state: ResMut<NextState<AppState>>,
+){
+    if menu_transition.is_empty() {return;}
+    menu_transition.clear();
+
     match **player_index{
         0 => {next_menu_state.set(MenuState::GameMenu)},
         1 => {next_menu_state.set(MenuState::SettingsMenu)},
@@ -106,13 +111,7 @@ pub fn transition(
         3 => {exit.write(AppExit::Success);},
         _ => panic!("somehow went into a non-existant menu"),
     }
-
-    if **player_index == 3{
-        TransitionType::Out
-    }
-    else{
-        TransitionType::In
-    }
+    next_app_state.set(AppState::Transition);
 }
 
 pub fn detransition(
