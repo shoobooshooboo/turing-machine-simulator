@@ -198,13 +198,11 @@ fn load_ui(
     commands: Commands,
     button_count: ResMut<ButtonCount>,
     menu_state: Res<State<MenuState>>,
-    mut player_index: ResMut<PlayerIndex>,
     meshes: ResMut<Assets<Mesh>>,
     mats: ResMut<Assets<ColorMaterial>>,
     volume: Res<CurVolume>,
     font: Res<DefaultFont>,
 ){
-    **player_index = 0;
     match **menu_state{
         MenuState::MainMenu => main_menu::load(commands, button_count, font),
         MenuState::GameMenu => game_menu::load(commands, button_count, font), 
@@ -236,7 +234,7 @@ fn play_menu_move_sound(
 fn transition_dispatcher(
     mut menu_transition: EventReader<MenuTransitionEvent>,
     detransition_writer: EventWriter<MenuDetransitionEvent>,
-    player_index: ResMut<PlayerIndex>,
+    mut player_index: ResMut<PlayerIndex>,
     menu_state: Res<State<MenuState>>,
     next_menu_state: ResMut<NextState<MenuState>>,
     next_game_state: ResMut<NextState<GameState>>,
@@ -248,10 +246,32 @@ fn transition_dispatcher(
     menu_transition.clear();
     match **menu_state{
         MenuState::CreditsMenu => credits_menu::transition(next_app_state, detransition_writer),
-        MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_app_state, menu_stack, detransition_writer),
-        MenuState::MainMenu => main_menu::transition(player_index, next_menu_state, next_app_state, menu_stack, detransition_writer),
-        MenuState::SandboxMenu => sandbox_menu::transition(player_index, save_file_index, next_menu_state, next_game_state, next_app_state, menu_stack, detransition_writer),
-        MenuState::SettingsMenu => settings_menu::transition(player_index, next_app_state, detransition_writer),
+        MenuState::GameMenu => game_menu::transition(&player_index, next_menu_state, next_app_state, menu_stack, detransition_writer),
+        MenuState::MainMenu => main_menu::transition(&player_index, next_menu_state, next_app_state, menu_stack, detransition_writer),
+        MenuState::SandboxMenu => sandbox_menu::transition(&player_index, save_file_index, next_menu_state, next_game_state, next_app_state, menu_stack, detransition_writer),
+        MenuState::SettingsMenu => settings_menu::transition(&player_index, next_app_state, detransition_writer),
         _ => (),
     }
+    **player_index = 0;
+}
+
+fn destransition(
+    mut detransition: EventReader<MenuDetransitionEvent>,
+    mut exit: EventWriter<AppExit>,
+    mut menu_stack: ResMut<MenuStack>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    mut next_menu_state: ResMut<NextState<MenuState>>,
+    mut player_index: ResMut<PlayerIndex>,
+){
+    if detransition.is_empty() {return;}
+    detransition.clear();
+    let Some((menu, index)) = menu_stack.pop() 
+    else{
+        exit.write(AppExit::Success);
+        return;
+    };
+
+    next_menu_state.set(menu);
+    next_app_state.set(AppState::Transition);
+    *player_index = index;
 }

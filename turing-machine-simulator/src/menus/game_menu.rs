@@ -93,15 +93,15 @@ pub fn load(
 }
 
 pub fn transition(
-    player_index: ResMut<PlayerIndex>,
+    player_index: &ResMut<PlayerIndex>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
     mut menu_stack: ResMut<MenuStack>,
     mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
-    if **player_index != 1{
-        menu_stack.push((MenuState::GameMenu, *player_index));
-        match **player_index{
+    if ***player_index != 1{
+        menu_stack.push((MenuState::GameMenu, **player_index));
+        match ***player_index{
             0 => next_menu_state.set(MenuState::SandboxMenu),
             1 => (),
             _ => panic!("somehow went into a non-existant menu"),

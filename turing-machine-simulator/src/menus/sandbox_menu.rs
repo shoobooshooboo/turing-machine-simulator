@@ -94,7 +94,7 @@ pub fn load(
 }
 
 pub fn transition(
-    player_index: ResMut<PlayerIndex>,
+    player_index: &ResMut<PlayerIndex>,
     mut save_file_index: ResMut<SaveFileIndex>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
@@ -102,14 +102,14 @@ pub fn transition(
     mut menu_stack: ResMut<MenuStack>,
     mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
-    if **player_index != 3{
-        menu_stack.push((MenuState::SandboxMenu, *player_index));
+    if ***player_index != 3{
+        menu_stack.push((MenuState::SandboxMenu, **player_index));
 
-        match **player_index{
+        match ***player_index{
             0 | 1 | 2 => {
                 next_menu_state.set(MenuState::None); 
                 next_game_state.set(GameState::Sandbox); 
-                **save_file_index = Some(**player_index + 1); 
+                **save_file_index = Some(***player_index + 1); 
             },
             3 => (),
             _ => panic!("somehow went into a non-existant menu"),

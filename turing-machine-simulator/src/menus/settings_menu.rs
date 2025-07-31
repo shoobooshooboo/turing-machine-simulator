@@ -160,11 +160,11 @@ pub fn load(
 }
 
 pub fn transition(
-    player_index: ResMut<PlayerIndex>,
+    player_index: &ResMut<PlayerIndex>,
     mut next_app_state: ResMut<NextState<AppState>>,
     mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
-    if **player_index == SLIDER_TEXT.len(){ 
+    if ***player_index == SLIDER_TEXT.len(){ 
         detransition_writer.write(MenuDetransitionEvent);
         next_app_state.set(AppState::Transition);
     }

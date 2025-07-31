@@ -95,15 +95,15 @@ pub fn load(
 }
 
 pub fn transition(
-    player_index: ResMut<PlayerIndex>,
+    player_index: &ResMut<PlayerIndex>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
     mut menu_stack: ResMut<MenuStack>,
     mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
-    if **player_index != 3{
-        menu_stack.push((MenuState::MainMenu, *player_index));
-        match **player_index{
+    if ***player_index != 3{
+        menu_stack.push((MenuState::MainMenu, **player_index));
+        match ***player_index{
             0 => {next_menu_state.set(MenuState::GameMenu)},
             1 => {next_menu_state.set(MenuState::SettingsMenu)},
             2 => {next_menu_state.set(MenuState::CreditsMenu)},
