@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path, slice::Iter};
 use bevy::{audio::PlaybackMode, input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
-use crate::{menus::MenuState, AppState, BaseFontSize, CurVolume, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
+use crate::{menus::{MenuDetransitionEvent}, AppState, BaseFontSize, CurVolume, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
 
 //Tape Cells
 const CELL_COUNT: usize = 1_000_000;
@@ -189,8 +189,7 @@ fn controls(
     mut cells: Query<&mut Cell>,
     mut tape: ResMut<Tape>,
     mut next_game_state: ResMut<NextState<GameState>>,
-    mut next_app_state: ResMut<NextState<AppState>>,
-    mut next_menu_state: ResMut<NextState<MenuState>>,
+    mut detransitions: EventWriter<MenuDetransitionEvent>,
     mut commands: Commands,
     sounds: Res<GameSounds>,
     volume: Res<CurVolume>,
@@ -226,8 +225,7 @@ fn controls(
 
     if inputs.just_pressed(KeyCode::Escape){
         next_game_state.set(GameState::None);
-        next_app_state.set(AppState::Transition);
-        next_menu_state.set(MenuState::GameMenu);
+        detransitions.write(MenuDetransitionEvent);
     }
 }
 

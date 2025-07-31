@@ -62,9 +62,9 @@ fn main() {
             (
             UpdateSet::Input,
             UpdateSet::Logic,
+            UpdateSet::Misc,
             UpdateSet::UI,
             ).chain(),
-            UpdateSet::Misc,
         )
     )
     .add_systems(
