@@ -37,18 +37,26 @@ struct ButtonIndex(usize);
 struct MenuSounds(HashMap<MenuSoundType, Handle<AudioSource>>);
 
 ///player's current selected button
-#[derive(Resource, Deref, DerefMut, Default)]
+#[derive(Resource, Deref, DerefMut, Default, Clone, Copy)]
 struct PlayerIndex(usize);
 
 ///total number of buttons in current menu
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct ButtonCount(usize);
 
+#[derive(Resource, Deref, DerefMut, Default)]
+struct MenuStack(Vec<(MenuState, PlayerIndex)>);
+
+///a sound should be playing!
 #[derive(Event, Deref)]
 struct PlayMenuSoundEvent(MenuSoundType);
 
+///the menu should be changing! (probably)
 #[derive(Event)]
 struct MenuTransitionEvent;
+
+#[derive(Event)]
+struct MenuDetransitionEvent;
 
 mod main_menu;
 mod settings_menu;
@@ -76,8 +84,10 @@ impl Plugin for MenuPlugin{
     .insert_state(MenuState::MainMenu)
     .insert_resource(PlayerIndex::default())
     .insert_resource(ButtonCount::default())
+    .insert_resource(MenuStack::default())
     .add_event::<PlayMenuSoundEvent>()
     .add_event::<MenuTransitionEvent>()
+    .add_event::<MenuDetransitionEvent>()
     .add_systems(
         Startup,
         load_audio,
@@ -225,22 +235,23 @@ fn play_menu_move_sound(
 
 fn transition_dispatcher(
     mut menu_transition: EventReader<MenuTransitionEvent>,
+    detransition_writer: EventWriter<MenuDetransitionEvent>,
     player_index: ResMut<PlayerIndex>,
     menu_state: Res<State<MenuState>>,
     next_menu_state: ResMut<NextState<MenuState>>,
     next_game_state: ResMut<NextState<GameState>>,
     next_app_state: ResMut<NextState<AppState>>,
-    exit: EventWriter<AppExit>,
     save_file_index: ResMut<SaveFileIndex>,
+    menu_stack: ResMut<MenuStack>,
 ){
     if menu_transition.is_empty() {return;}
     menu_transition.clear();
     match **menu_state{
-        MenuState::CreditsMenu => credits_menu::transition(next_menu_state, next_app_state),
-        MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_app_state),
-        MenuState::MainMenu => main_menu::transition(player_index, exit, next_menu_state, next_app_state),
-        MenuState::SandboxMenu => sandbox_menu::transition(player_index, save_file_index, next_menu_state, next_game_state, next_app_state),
-        MenuState::SettingsMenu => settings_menu::transition(player_index, next_menu_state, next_app_state),
+        MenuState::CreditsMenu => credits_menu::transition(next_app_state, detransition_writer),
+        MenuState::GameMenu => game_menu::transition(player_index, next_menu_state, next_app_state, menu_stack, detransition_writer),
+        MenuState::MainMenu => main_menu::transition(player_index, next_menu_state, next_app_state, menu_stack, detransition_writer),
+        MenuState::SandboxMenu => sandbox_menu::transition(player_index, save_file_index, next_menu_state, next_game_state, next_app_state, menu_stack, detransition_writer),
+        MenuState::SettingsMenu => settings_menu::transition(player_index, next_app_state, detransition_writer),
         _ => (),
     }
 }

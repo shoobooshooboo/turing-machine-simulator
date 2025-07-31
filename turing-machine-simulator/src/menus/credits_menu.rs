@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::FontSmoothing;
 
-use crate::{AppState, BaseFontSize, DefaultFont, MenuState};
+use crate::{menus::{MenuDetransitionEvent}, AppState, BaseFontSize, DefaultFont, MenuState};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
 
@@ -124,10 +124,10 @@ pub fn load(
 }
 
 pub fn transition(
-    mut next_menu_state: ResMut<NextState<MenuState>>, 
     mut next_app_state: ResMut<NextState<AppState>>,
+    mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
-    next_menu_state.set(MenuState::MainMenu);
+    detransition_writer.write(MenuDetransitionEvent);
     next_app_state.set(AppState::Transition);
 }
 

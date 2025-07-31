@@ -1,7 +1,7 @@
 use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
-use crate::menus::{MenuState};
+use crate::menus::{MenuDetransitionEvent, MenuStack, MenuState};
 use crate::{AppState, DefaultFont};
 use crate::{BaseFontSize, menus::{ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, MenuUI}};
 //title
@@ -96,12 +96,20 @@ pub fn transition(
     player_index: ResMut<PlayerIndex>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
+    mut menu_stack: ResMut<MenuStack>,
+    mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
-    match **player_index{
-        0 => next_menu_state.set(MenuState::SandboxMenu),
-        1 => next_menu_state.set(MenuState::MainMenu),
-        _ => panic!("somehow went into a non-existant menu"),
+    if **player_index != 1{
+        menu_stack.push((MenuState::GameMenu, *player_index));
+        match **player_index{
+            0 => next_menu_state.set(MenuState::SandboxMenu),
+            1 => (),
+            _ => panic!("somehow went into a non-existant menu"),
+        }
+    }else{
+        detransition_writer.write(MenuDetransitionEvent);
     }
+    
     next_app_state.set(AppState::Transition);
 }
 

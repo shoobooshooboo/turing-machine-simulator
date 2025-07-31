@@ -2,7 +2,7 @@ use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
 use crate::games::{GameState, SaveFileIndex};
-use crate::menus::{MenuState};
+use crate::menus::{MenuDetransitionEvent, MenuStack, MenuState};
 use crate::{AppState, DefaultFont};
 use crate::{BaseFontSize, menus::{ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, MenuUI}};
 //title
@@ -99,12 +99,25 @@ pub fn transition(
     mut next_menu_state: ResMut<NextState<MenuState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
+    mut menu_stack: ResMut<MenuStack>,
+    mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
-    match **player_index{
-        0 | 1 | 2 => {next_menu_state.set(MenuState::None); next_game_state.set(GameState::Sandbox); **save_file_index = Some(**player_index + 1); },
-        3 => next_menu_state.set(MenuState::GameMenu),
-        _ => panic!("somehow went into a non-existant menu"),
+    if **player_index != 3{
+        menu_stack.push((MenuState::SandboxMenu, *player_index));
+
+        match **player_index{
+            0 | 1 | 2 => {
+                next_menu_state.set(MenuState::None); 
+                next_game_state.set(GameState::Sandbox); 
+                **save_file_index = Some(**player_index + 1); 
+            },
+            3 => (),
+            _ => panic!("somehow went into a non-existant menu"),
+        }
+    }else{
+        detransition_writer.write(MenuDetransitionEvent);
     }
+    
     next_app_state.set(AppState::Transition);
 }
 

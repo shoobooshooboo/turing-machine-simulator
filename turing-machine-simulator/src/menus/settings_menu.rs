@@ -2,6 +2,7 @@ use bevy::audio::Volume;
 use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
+use crate::menus::{MenuDetransitionEvent};
 use crate::{AppState, CurVolume, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 use crate::{menus::{PlayerIndex}, BaseFontSize, MenuState};
 
@@ -160,13 +161,13 @@ pub fn load(
 
 pub fn transition(
     player_index: ResMut<PlayerIndex>,
-    mut next_menu_state: ResMut<NextState<MenuState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
+    mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
     if **player_index == SLIDER_TEXT.len(){ 
-        next_menu_state.set(MenuState::MainMenu);
+        detransition_writer.write(MenuDetransitionEvent);
+        next_app_state.set(AppState::Transition);
     }
-    next_app_state.set(AppState::Transition);
 }
 
 pub fn detransition(
