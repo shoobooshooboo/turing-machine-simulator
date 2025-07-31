@@ -56,7 +56,7 @@ struct PlayMenuSoundEvent(MenuSoundType);
 struct MenuTransitionEvent;
 
 #[derive(Event)]
-struct MenuDetransitionEvent;
+pub struct MenuDetransitionEvent;
 
 mod main_menu;
 mod settings_menu;

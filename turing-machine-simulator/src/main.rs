@@ -25,6 +25,14 @@ enum AppState{
     Transition,
 }
 
+#[derive(SystemSet, Clone, Copy, Debug, PartialEq, Eq, Hash)]
+enum UpdateSet{
+    Input,
+    Logic,
+    UI,
+    Misc,
+}
+
 #[derive(Component, Deref, DerefMut)]
 pub struct BaseFontSize(f32);
 
@@ -48,20 +56,31 @@ fn main() {
     .add_plugins(menus::MenuPlugin)
     .add_plugins(games::GamePlugin)
     .insert_state(AppState::Transition)
+    .configure_sets(
+        Update,
+        (
+            (
+            UpdateSet::Input,
+            UpdateSet::Logic,
+            UpdateSet::UI,
+            ).chain(),
+            UpdateSet::Misc,
+        )
+    )
     .add_systems(
         Startup,
         setup
     )
     .add_systems(
-        OnEnter(AppState::Transition),
-        transition
-    )
-    .add_systems(
         Update,
         (
-            scale_text,
-            save_setting,
+            scale_text.in_set(UpdateSet::UI),
+            save_setting.in_set(UpdateSet::Misc),
         )
+    )
+    .add_systems(
+        OnEnter(AppState::Transition),
+        transition
     )
     .run();
 }
