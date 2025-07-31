@@ -1,6 +1,6 @@
 use bevy::{audio::PlaybackMode, prelude::*};
 use crate::games::{GameState, SaveFileIndex};
-use crate::{AppState, CurVolume, DefaultFont, AUDIO_FILE_PREFIX};
+use crate::{AppState, CurVolume, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
 use std::collections::HashMap;
 use std::slice::Iter;
 
@@ -102,17 +102,17 @@ impl Plugin for MenuPlugin{
     )
     .add_systems(
     Update,
-    (
-        (
-        controls,
-        button_selection,
-        transition_dispatcher,
-        detransition,
-        settings_menu::update_sliders.run_if(in_state(MenuState::SettingsMenu)),
-        settings_menu::slider_controls.run_if(in_state(MenuState::SettingsMenu)),
-        ).chain(),
-        play_menu_move_sound,
-    ).run_if(in_state(AppState::InMenu)));
+    ((
+        controls.in_set(UpdateSet::Input),
+        settings_menu::slider_controls.in_set(UpdateSet::Input).run_if(in_state(MenuState::SettingsMenu)),
+        transition_dispatcher.in_set(UpdateSet::Logic),
+        play_menu_move_sound.in_set(UpdateSet::Logic),
+        button_selection.in_set(UpdateSet::UI),
+        settings_menu::update_sliders.in_set(UpdateSet::UI).run_if(in_state(MenuState::SettingsMenu)),
+    ).run_if(in_state(AppState::InMenu)),
+    detransition.in_set(UpdateSet::Logic),
+    )
+);
     }
 }
 
