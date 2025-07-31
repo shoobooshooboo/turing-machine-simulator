@@ -150,13 +150,10 @@ fn button_selection(
 fn controls(
     mut player_index: ResMut<PlayerIndex>,
     inputs: Res<ButtonInput<KeyCode>>,
-    exit: EventWriter<AppExit>,
-    menu_state: Res<State<MenuState>>,
-    next_menu_state: ResMut<NextState<MenuState>>,
-    mut next_app_state: ResMut<NextState<AppState>>,
     button_count: Res<ButtonCount>,
     mut sound_player: EventWriter<PlayMenuSoundEvent>,
     mut menu_transitioner: EventWriter<MenuTransitionEvent>,
+    mut menu_detransitioner: EventWriter<MenuDetransitionEvent>,
 ){
     if inputs.just_pressed(KeyCode::ArrowUp){
         **player_index = player_index.checked_sub(1).unwrap_or(**button_count - 1);
@@ -171,16 +168,8 @@ fn controls(
         menu_transitioner.write(MenuTransitionEvent);
         sound_player.write(PlayMenuSoundEvent(MenuSoundType::Select));
     }else if inputs.just_pressed(KeyCode::Escape){
-        next_app_state.set(AppState::Transition);
+        menu_detransitioner.write(MenuDetransitionEvent);
         sound_player.write(PlayMenuSoundEvent(MenuSoundType::Back));
-        match **menu_state{
-            MenuState::MainMenu => main_menu::detransition(exit),
-            MenuState::GameMenu => game_menu::detransition(next_menu_state),
-            MenuState::CreditsMenu => credits_menu::detransition(next_menu_state),
-            MenuState::SandboxMenu => sandbox_menu::detransition(next_menu_state),
-            MenuState::SettingsMenu => settings_menu::detransition(next_menu_state),
-            _ => panic!("unimplemented menu"),
-        }
     }
 }
 

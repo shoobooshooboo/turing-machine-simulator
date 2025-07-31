@@ -113,9 +113,3 @@ pub fn transition(
         detransition_writer.write(MenuDetransitionEvent);
     }
 }
-
-pub fn detransition(
-    mut exit: EventWriter<AppExit>,
-){
-    exit.write(AppExit::Success);
-}

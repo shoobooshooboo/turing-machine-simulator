@@ -109,9 +109,3 @@ pub fn transition(
         detransition_writer.write(MenuDetransitionEvent);
     }
 }
-
-pub fn detransition(
-    mut next_menu_state: ResMut<NextState<MenuState>>, 
-){
-    next_menu_state.set(MenuState::MainMenu);
-}
