@@ -106,7 +106,7 @@ impl Plugin for MenuPlugin{
         controls.in_set(UpdateSet::Input),
         settings_menu::slider_controls.in_set(UpdateSet::Input).run_if(in_state(MenuState::SettingsMenu)),
         transition_dispatcher.in_set(UpdateSet::Logic),
-        play_menu_move_sound.in_set(UpdateSet::Logic),
+        play_menu_sound.in_set(UpdateSet::Logic),
         button_selection.in_set(UpdateSet::UI),
         settings_menu::update_sliders.in_set(UpdateSet::UI).run_if(in_state(MenuState::SettingsMenu)),
     ).run_if(in_state(AppState::InMenu)),
@@ -203,7 +203,7 @@ fn load_ui(
     }
 }
 
-fn play_menu_move_sound(
+fn play_menu_sound(
     mut sound_events: EventReader<PlayMenuSoundEvent>,
     mut commands: Commands,
     volume: Res<CurVolume>,

@@ -64,14 +64,17 @@ impl Default for Tape{
 #[derive(Resource, Deref, DerefMut, Default)]
 struct CursorIndex(usize);
 
+#[derive(Event, Deref)]
+struct PlayGameSoundEvent(GameSoundType);
+
+mod sandbox;
+
 /// controls the current gamemode
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum GameState{
     Sandbox,
     None,
 }
-
-mod sandbox;
 
 pub struct GamePlugin;
 
@@ -82,6 +85,7 @@ impl Plugin for GamePlugin{
         .insert_resource(Tape::default())
         .insert_resource(CursorIndex::default())
         .insert_resource(SaveFileIndex::default())
+        .add_event::<PlayGameSoundEvent>()
         .add_systems(
             Startup,
             load_sounds,
@@ -95,8 +99,10 @@ impl Plugin for GamePlugin{
             (
                 controls.in_set(UpdateSet::Input),
                 write_to_cell.in_set(UpdateSet::Logic),
+                play_game_sound.in_set(UpdateSet::Logic),
                 update_cells.in_set(UpdateSet::UI),
-        ).run_if(in_state(AppState::InGame)))
+        ).run_if(in_state(AppState::InGame)
+        ))
         .add_systems(
             OnExit(AppState::InGame),
             unload_ui
@@ -190,11 +196,8 @@ fn controls(
     mut tape: ResMut<Tape>,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut detransitions: EventWriter<MenuDetransitionEvent>,
-    mut commands: Commands,
-    sounds: Res<GameSounds>,
-    volume: Res<CurVolume>,
+    mut game_sounds: EventWriter<PlayGameSoundEvent>,
 ){
-    let volume = volume.0;
     let initial_cursor = **cursor;
     let mut cursor_tried_move = false; 
     if inputs.just_pressed(KeyCode::ArrowLeft){
@@ -213,14 +216,15 @@ fn controls(
         for mut cell_index in &mut cells{
             **cell_index += if initial_cursor < **cursor {1} else {-1};
         }
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Move].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
+        game_sounds.write(PlayGameSoundEvent(GameSoundType::Move));
     }else if cursor_tried_move{
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::CantMove].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
+        game_sounds.write(PlayGameSoundEvent(GameSoundType::CantMove));
+
     }
     
     if inputs.just_pressed(KeyCode::Backspace){
         tape[**cursor] = DEFAULT_CELL_CHAR;
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Delete].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
+        game_sounds.write(PlayGameSoundEvent(GameSoundType::Delete));
     }
 
     if inputs.just_pressed(KeyCode::Escape){
@@ -233,11 +237,8 @@ fn write_to_cell(
     cursor: Res<CursorIndex>,
     mut tape: ResMut<Tape>,
     mut keyboard: EventReader<KeyboardInput>,
-    mut commands: Commands,
-    sounds: Res<GameSounds>,
-    volume: Res<CurVolume>,
+    mut game_sounds: EventWriter<PlayGameSoundEvent>,
 ){
-    let volume = volume.0;
     if keyboard.is_empty(){
         return;
     }
@@ -256,7 +257,7 @@ fn write_to_cell(
 
     if let Some(c) = char_to_write{
         tape[**cursor] = c;
-        commands.spawn((AudioPlayer::new(sounds[&GameSoundType::Write].clone()), PlaybackSettings{mode: PlaybackMode::Despawn, volume, ..Default::default()}));
+        game_sounds.write(PlayGameSoundEvent(GameSoundType::Write));
     }
 }
 
@@ -314,5 +315,23 @@ fn unload_ui(
 
     for cell in tape.iter_mut(){
         *cell = DEFAULT_CELL_CHAR;
+    }
+}
+
+fn play_game_sound(
+    mut sound_events: EventReader<PlayGameSoundEvent>,
+    mut commands: Commands,
+    volume: Res<CurVolume>,
+    sounds: Res<GameSounds>,
+){
+    for sound_type in sound_events.read(){
+        commands.spawn((
+            AudioPlayer(sounds[sound_type].clone()), 
+            PlaybackSettings{
+                mode: PlaybackMode::Despawn,
+                volume: **volume, 
+                ..Default::default()
+            }
+        ));
     }
 }
