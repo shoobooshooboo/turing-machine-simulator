@@ -106,12 +106,12 @@ impl Plugin for MenuPlugin{
         (
         controls,
         button_selection,
+        transition_dispatcher,
+        detransition,
         settings_menu::update_sliders.run_if(in_state(MenuState::SettingsMenu)),
         settings_menu::slider_controls.run_if(in_state(MenuState::SettingsMenu)),
         ).chain(),
         play_menu_move_sound,
-        transition_dispatcher,
-        detransition,
     ).run_if(in_state(AppState::InMenu)));
     }
 }
