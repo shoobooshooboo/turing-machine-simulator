@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path, slice::Iter};
 use bevy::{audio::PlaybackMode, input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
-use crate::{menus::MenuState, AppState, BaseFontSize, CurVolume, DefaultFont, AUDIO_FILE_PREFIX};
+use crate::{menus::MenuState, AppState, BaseFontSize, CurVolume, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
 
 //Tape Cells
 const CELL_COUNT: usize = 1_000_000;
@@ -93,10 +93,10 @@ impl Plugin for GamePlugin{
         .add_systems(
             Update,
             (
-                controls.run_if(in_state(AppState::InGame)),
-                write_to_cell.run_if(in_state(AppState::InGame)),
-                update_cells.run_if(in_state(AppState::InGame)),
-        ).chain())
+                controls.in_set(UpdateSet::Input),
+                write_to_cell.in_set(UpdateSet::Logic),
+                update_cells.in_set(UpdateSet::UI),
+        ).run_if(in_state(AppState::InGame)))
         .add_systems(
             OnExit(AppState::InGame),
             unload_ui
