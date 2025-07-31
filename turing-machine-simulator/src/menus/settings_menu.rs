@@ -3,7 +3,7 @@ use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
 use crate::menus::{MenuDetransitionEvent};
-use crate::{AppState, CurVolume, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{CurVolume, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 use crate::{menus::{PlayerIndex}, BaseFontSize, MenuState};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
@@ -161,12 +161,10 @@ pub fn load(
 
 pub fn transition(
     player_index: &ResMut<PlayerIndex>,
-    mut next_app_state: ResMut<NextState<AppState>>,
     mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
     if ***player_index == SLIDER_TEXT.len(){ 
         detransition_writer.write(MenuDetransitionEvent);
-        next_app_state.set(AppState::Transition);
     }
 }
 

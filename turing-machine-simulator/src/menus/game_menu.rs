@@ -2,7 +2,7 @@ use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
 use crate::menus::{MenuDetransitionEvent, MenuStack, MenuState};
-use crate::{AppState, DefaultFont};
+use crate::{DefaultFont};
 use crate::{BaseFontSize, menus::{ButtonCount, ButtonIndex, PlayerIndex, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR, MenuUI}};
 //title
 const TITLE_HEIGHT_PER: f32 = 30.0;
@@ -95,7 +95,6 @@ pub fn load(
 pub fn transition(
     player_index: &ResMut<PlayerIndex>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-    mut next_app_state: ResMut<NextState<AppState>>,
     mut menu_stack: ResMut<MenuStack>,
     mut detransition_writer: EventWriter<MenuDetransitionEvent>,
 ){
@@ -109,8 +108,6 @@ pub fn transition(
     }else{
         detransition_writer.write(MenuDetransitionEvent);
     }
-    
-    next_app_state.set(AppState::Transition);
 }
 
 pub fn detransition(

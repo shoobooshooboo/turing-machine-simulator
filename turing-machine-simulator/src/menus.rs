@@ -111,6 +111,7 @@ impl Plugin for MenuPlugin{
         ).chain(),
         play_menu_move_sound,
         transition_dispatcher,
+        detransition,
     ).run_if(in_state(AppState::InMenu)));
     }
 }
@@ -238,24 +239,25 @@ fn transition_dispatcher(
     menu_state: Res<State<MenuState>>,
     next_menu_state: ResMut<NextState<MenuState>>,
     next_game_state: ResMut<NextState<GameState>>,
-    next_app_state: ResMut<NextState<AppState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
     save_file_index: ResMut<SaveFileIndex>,
     menu_stack: ResMut<MenuStack>,
 ){
     if menu_transition.is_empty() {return;}
     menu_transition.clear();
     match **menu_state{
-        MenuState::CreditsMenu => credits_menu::transition(next_app_state, detransition_writer),
-        MenuState::GameMenu => game_menu::transition(&player_index, next_menu_state, next_app_state, menu_stack, detransition_writer),
-        MenuState::MainMenu => main_menu::transition(&player_index, next_menu_state, next_app_state, menu_stack, detransition_writer),
-        MenuState::SandboxMenu => sandbox_menu::transition(&player_index, save_file_index, next_menu_state, next_game_state, next_app_state, menu_stack, detransition_writer),
-        MenuState::SettingsMenu => settings_menu::transition(&player_index, next_app_state, detransition_writer),
+        MenuState::CreditsMenu => credits_menu::transition(detransition_writer),
+        MenuState::GameMenu => game_menu::transition(&player_index, next_menu_state, menu_stack, detransition_writer),
+        MenuState::MainMenu => main_menu::transition(&player_index, next_menu_state, menu_stack, detransition_writer),
+        MenuState::SandboxMenu => sandbox_menu::transition(&player_index, save_file_index, next_menu_state, next_game_state, menu_stack, detransition_writer),
+        MenuState::SettingsMenu => settings_menu::transition(&player_index, detransition_writer),
         _ => (),
     }
+    next_app_state.set(AppState::Transition);
     **player_index = 0;
 }
 
-fn destransition(
+fn detransition(
     mut detransition: EventReader<MenuDetransitionEvent>,
     mut exit: EventWriter<AppExit>,
     mut menu_stack: ResMut<MenuStack>,
