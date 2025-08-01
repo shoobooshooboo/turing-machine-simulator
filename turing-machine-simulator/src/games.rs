@@ -249,6 +249,8 @@ fn write_to_cell(
         }
 
         match &e.logical_key{
+            Key::Enter => char_to_write = Some('\n'),
+            Key::Tab => char_to_write = Some('\t'),
             Key::Space => char_to_write = Some(' '),
             Key::Character(c) => char_to_write = Some(c.chars().next().unwrap()),
             _ => (),
