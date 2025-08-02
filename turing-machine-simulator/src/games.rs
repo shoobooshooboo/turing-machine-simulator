@@ -277,7 +277,13 @@ fn update_cells(
                 *vis = Visibility::Visible;
                 let child = children.iter().next().unwrap();
                 if let Ok(mut text) = children_query.get_mut(child){
-                    text.0 = c.to_string();
+                    if c == '\t'{
+                        text.0 = "\\t".into();
+                    }else if c == '\n'{
+                        text.0 = "\\n".into();
+                    }else{
+                        text.0 = c.to_string();
+                    }
                 }
             }
         }
