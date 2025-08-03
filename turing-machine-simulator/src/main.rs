@@ -4,10 +4,11 @@ use std::{fs, path::Path};
 
 use bevy::{audio::Volume, prelude::*, window::{WindowResized, WindowResolution}};
 
-use crate::menus::MenuState;
+use crate::{menus::MenuState, post_processing::PostProcessSettings};
 
 mod menus;
 mod games;
+mod post_processing;
 
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
@@ -15,6 +16,7 @@ const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
 const AUDIO_FILE_PREFIX: &'static str = "audio\\";
 const FONT_FILE: &'static str = "dos_font.ttf";
 const SETTINGS_FILE: &'static str = "assets\\saves\\settings";
+const SHADER_FILE: &'static str = "shaders\\post_processing.wgsl";
 
 /// controls the current app state
 #[derive(States, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -55,6 +57,7 @@ fn main() {
     }))
     .add_plugins(menus::MenuPlugin)
     .add_plugins(games::GamePlugin)
+    .add_plugins(post_processing::PostProcessPlugin)
     .insert_state(AppState::Transition)
     .configure_sets(
         Update,
@@ -90,7 +93,14 @@ fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ){
-    commands.spawn(Camera2d::default());
+    // commands.spawn(Camera2d::default());
+    commands.spawn((
+        Camera2d::default(),
+        PostProcessSettings {
+            intensity: 0.001,
+            ..default()
+        },
+    ));
     let font = asset_server.load(FONT_FILE);
     commands.insert_resource(DefaultFont(font));
 
