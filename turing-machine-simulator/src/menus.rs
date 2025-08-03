@@ -1,6 +1,6 @@
 use bevy::{audio::PlaybackMode, prelude::*};
 use crate::games::{GameState, SaveFileIndex};
-use crate::{AppState, CurVolume, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
+use crate::{AppState, VolumeSetting, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
 use std::collections::HashMap;
 use std::slice::Iter;
 
@@ -190,7 +190,7 @@ fn load_ui(
     menu_state: Res<State<MenuState>>,
     meshes: ResMut<Assets<Mesh>>,
     mats: ResMut<Assets<ColorMaterial>>,
-    volume: Res<CurVolume>,
+    volume: Res<VolumeSetting>,
     font: Res<DefaultFont>,
 ){
     match **menu_state{
@@ -206,7 +206,7 @@ fn load_ui(
 fn play_menu_sound(
     mut sound_events: EventReader<PlayMenuSoundEvent>,
     mut commands: Commands,
-    volume: Res<CurVolume>,
+    volume: Res<VolumeSetting>,
     sounds: Res<MenuSounds>,
 ){
     for sound_type in sound_events.read(){

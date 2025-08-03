@@ -3,7 +3,7 @@ use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
 use crate::menus::{MenuDetransitionEvent};
-use crate::{CurVolume, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{VolumeSetting, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 use crate::{menus::{PlayerIndex}, BaseFontSize};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
@@ -49,7 +49,7 @@ pub fn load(
     mut button_count: ResMut<ButtonCount>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<ColorMaterial>>,
-    volume: Res<CurVolume>,
+    volume: Res<VolumeSetting>,
     font: Res<DefaultFont>,
 ){
     **button_count = SLIDER_TEXT.len() + 1;
@@ -188,7 +188,7 @@ pub fn slider_controls(
     inputs: Res<ButtonInput<KeyCode>>,
     mut thumbs: Query<&mut Thumb>,
     time: Res<Time>,
-    mut volume: ResMut<CurVolume>,
+    mut volume: ResMut<VolumeSetting>,
 ){
     let dt = time.delta_secs();
     if inputs.pressed(KeyCode::ArrowLeft){

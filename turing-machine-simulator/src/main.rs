@@ -39,7 +39,7 @@ enum UpdateSet{
 pub struct BaseFontSize(f32);
 
 #[derive(Resource, Deref, DerefMut)]
-pub struct CurVolume(Volume);
+pub struct VolumeSetting(Volume);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct DefaultFont(Handle<Font>);
@@ -104,7 +104,7 @@ fn setup(
     let font = asset_server.load(FONT_FILE);
     commands.insert_resource(DefaultFont(font));
 
-    commands.insert_resource(CurVolume(Volume::Linear(1.0)));
+    commands.insert_resource(VolumeSetting(Volume::Linear(1.0)));
 
     let contents = fs::read_to_string(Path::new(SETTINGS_FILE)).unwrap_or_default();
     for line in contents.lines(){
@@ -122,7 +122,7 @@ fn setup(
         };
 
         match identifier.as_str(){
-            "volume" => commands.insert_resource(CurVolume(Volume::Linear(value))),
+            "volume" => commands.insert_resource(VolumeSetting(Volume::Linear(value))),
             _ => (),
         }
     }
@@ -155,7 +155,7 @@ pub fn scale_text(
 
 pub fn save_setting(
     exit: EventReader<AppExit>,
-    volume: Res<CurVolume>,
+    volume: Res<VolumeSetting>,
 ){
     if exit.is_empty(){ return; }
     let contents = "volume ".to_string() + &volume.0.to_linear().to_string();

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path, slice::Iter};
 use bevy::{audio::PlaybackMode, input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
-use crate::{menus::{MenuDetransitionEvent}, AppState, BaseFontSize, CurVolume, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
+use crate::{menus::{MenuDetransitionEvent}, AppState, BaseFontSize, VolumeSetting, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
 
 //Tape Cells
 const CELL_COUNT: usize = 1_000_000;
@@ -329,7 +329,7 @@ fn unload_ui(
 fn play_game_sound(
     mut sound_events: EventReader<PlayGameSoundEvent>,
     mut commands: Commands,
-    volume: Res<CurVolume>,
+    volume: Res<VolumeSetting>,
     sounds: Res<GameSounds>,
 ){
     for sound_type in sound_events.read(){
