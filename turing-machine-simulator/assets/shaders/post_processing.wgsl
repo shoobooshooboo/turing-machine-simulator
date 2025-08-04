@@ -37,10 +37,16 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     let offset_strength = settings.intensity;
 
     // Sample each color channel with an arbitrary shift
+    // return vec4<f32>(
+    //     textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(offset_strength, -offset_strength)).r,
+    //     textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength, 0.0)).g,
+    //     textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(0.0, offset_strength)).b,
+    //     1.0
+    // );
     return vec4<f32>(
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(offset_strength, -offset_strength)).r,
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength, 0.0)).g,
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(0.0, offset_strength)).b,
+        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength * 3.0, 0.0)).r,
+        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength * 2.0, 0.0)).g,
+        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength, 0.0)).b,
         1.0
     );
 }

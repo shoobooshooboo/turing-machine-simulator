@@ -97,7 +97,7 @@ fn setup(
     commands.spawn((
         Camera2d::default(),
         PostProcessSettings {
-            intensity: 0.001,
+            intensity: 0.0021,
             ..default()
         },
     ));
