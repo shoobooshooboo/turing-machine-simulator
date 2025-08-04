@@ -1,5 +1,6 @@
 use bevy::{audio::PlaybackMode, prelude::*};
 use crate::games::{GameState, SaveFileIndex};
+use crate::post_processing::PostProcessSettings;
 use crate::{AppState, VolumeSetting, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
 use std::collections::HashMap;
 use std::slice::Iter;
@@ -192,13 +193,14 @@ fn load_ui(
     mats: ResMut<Assets<ColorMaterial>>,
     volume: Res<VolumeSetting>,
     font: Res<DefaultFont>,
+    chromabb_query: Query<&PostProcessSettings>,
 ){
     match **menu_state{
         MenuState::MainMenu => main_menu::load(commands, button_count, font),
         MenuState::GameMenu => game_menu::load(commands, button_count, font), 
         MenuState::CreditsMenu => credits_menu::load(commands, button_count, font),
         MenuState::SandboxMenu => sandbox_menu::load(commands, button_count, font),
-        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats, volume, font),
+        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats, volume, font, chromabb_query),
         _ => print!("unimplemented menu"),
     }
 }

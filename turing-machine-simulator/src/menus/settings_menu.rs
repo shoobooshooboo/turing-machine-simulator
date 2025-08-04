@@ -4,7 +4,7 @@ use bevy::text::FontSmoothing;
 
 use crate::menus::{MenuDetransitionEvent};
 use crate::post_processing::PostProcessSettings;
-use crate::{VolumeSetting, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
+use crate::{DefaultFont, VolumeSetting, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH, MAX_CHROMATIC_ABBERATION, MIN_CHROMATIC_ABBERATION};
 use crate::{menus::{PlayerIndex}, BaseFontSize};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
@@ -34,7 +34,7 @@ const SLIDER_THUMB_COLOR: Color = Color::WHITE;
 //slider text
 const SLIDER_TEXT_COLOR: Color = Color::WHITE;
 const SLIDER_TEXT_FONT_SIZE: f32 = 30.0;
-const SLIDER_TEXT: [&'static str; 1] = ["Master Volume"];
+const SLIDER_TEXT: [&'static str; 2] = ["Master Volume", "Chromatic Abberation"];
 
 #[derive(Component, Deref)]
 pub struct Slider(usize);
@@ -52,6 +52,7 @@ pub fn load(
     mut mats: ResMut<Assets<ColorMaterial>>,
     volume: Res<VolumeSetting>,
     font: Res<DefaultFont>,
+    chromabb_query: Query<&PostProcessSettings>,
 ){
     **button_count = SLIDER_TEXT.len() + 1;
     //TEXT
@@ -80,6 +81,8 @@ pub fn load(
         TextLayout::new_with_justify(JustifyText::Center),
     ));
 
+    let starting_positions = [volume.0.to_linear(), chromabb_query.single().unwrap().intensity];
+
     //Sliders
     for i in 0..SLIDER_TEXT.len(){
         //slider bar
@@ -88,11 +91,11 @@ pub fn load(
             Slider(i),
             Mesh2d(meshes.add(Rectangle::new(SLIDER_WIDTH, SLIDER_HEIGHT))),
             MeshMaterial2d(mats.add(SLIDER_COLOR)),
-            Transform::from_translation(Vec3::new(0.0, 110.0, 0.0))
+            Transform::from_translation(Vec3::new(0.0, 110.0 * (SLIDER_TEXT.len() - i - 1) as f32, 0.0))
         ))
         //slider thumb
         .with_child((
-            Thumb{index: i, location: volume.to_linear()},
+            Thumb{index: i, location: starting_positions[i]},
             Mesh2d(meshes.add(Rectangle::new(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT))),
             MeshMaterial2d(mats.add(SLIDER_COLOR)),
             Transform::from_translation(Vec3::new(0.0,0.0,1.0)),
@@ -193,30 +196,22 @@ pub fn slider_controls(
     mut chromabb_query: Query<&mut PostProcessSettings>,
 ){
     let dt = time.delta_secs();
-    if inputs.pressed(KeyCode::ArrowLeft){
-        for mut t in &mut thumbs{
-            if t.index == **player_index{
+
+    for mut t in &mut thumbs{
+        if t.index == **player_index{
+            if inputs.pressed(KeyCode::ArrowLeft){
                 t.location -= dt;
-                t.location = t.location.clamp(0.0, 1.0);
-                match t.index{
-                    0 => volume.0 = Volume::Linear(t.location),
-                    1 => {},
-                    _ => {},
-                }
-                break;
             }
-        }      
-    }
-
-    if inputs.pressed(KeyCode::ArrowRight){
-        for mut t in &mut thumbs{
-            if t.index == **player_index{
+            if inputs.pressed(KeyCode::ArrowRight){
                 t.location += dt;
-                t.location = t.location.clamp(0.0, 1.0);
-                volume.0 = Volume::Linear(t.location);
-                break;
             }
-        }      
+            t.location = t.location.clamp(0.0, 1.0);
+            match t.index{
+                0 => volume.0 = Volume::Linear(t.location),
+                1 => {chromabb_query.single_mut().unwrap().intensity = (MAX_CHROMATIC_ABBERATION - MIN_CHROMATIC_ABBERATION) * t.location},
+                _ => {},
+            }
+            break;
+        }
     }
-
 }
