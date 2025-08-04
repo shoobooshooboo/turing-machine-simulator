@@ -37,28 +37,18 @@ struct TimeData{
 fn fragment(
     in: FullscreenVertexOutput
 ) -> @location(0) vec4<f32> {
+    // Chromatic aberration strength
     let uv = in.uv;
     let position = in.position;
     let offset_strength = settings.intensity;
-    let screen_height = 800.0;
-    let big_line_width = 10.0;
-    let period = 6.0;
-    let base_dim = 0.25;
-
-    let t = time.time % period;
-    let big_line_location = screen_height * t / period;
-    var big_lines = clamp(abs(position.y % screen_height - big_line_location), 0, big_line_width) / big_line_width + base_dim;
-    let little_lines =  f32(u32(position.y) % 3u);
-    let scan_effect = little_lines * big_lines;
+    let scan_effect = f32(u32(position.y) % 3u);
+    let t = time.time;
+    let big_line_effect =  f32(u32(sin(t) * position.y) % 800u) / 800.0;
 
     return vec4<f32>(
-        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength * 3.0, 0.0)).r * scan_effect,
-        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength * 2.0, 0.0)).g * scan_effect,
-        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength, 0.0)).b * scan_effect,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength * 3.0, 0.0)).r * scan_effect * big_line_effect,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength * 2.0, 0.0)).g * scan_effect * big_line_effect,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength, 0.0)).b * scan_effect * big_line_effect,
         1.0
     );
-}
-
-fn clamp(x: f32, min_val: f32, max_val: f32) -> f32{
-    return min(max(x, min_val), max_val);
 }

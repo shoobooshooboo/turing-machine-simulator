@@ -44,7 +44,11 @@ impl Plugin for PostProcessPlugin{
             // This plugin will prepare the component for the GPU by creating a uniform buffer
             // and writing the data to that buffer every frame.
             UniformComponentPlugin::<PostProcessSettings>::default(),
-        ));
+
+            ExtractComponentPlugin::<TimeData>::default(),
+            UniformComponentPlugin::<TimeData>::default(),
+        ))
+        .add_systems(Update, update_time);
 
         // We need to get the render app from the main app
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
@@ -152,6 +156,11 @@ impl ViewNode for PostProcessNode {
             return Ok(());
         };
 
+        let time_uniforms = world.resource::<ComponentUniforms<TimeData>>();
+        let Some(time_binding) = time_uniforms.uniforms().binding() else {
+            return Ok(());
+        };
+
         // This will start a new "post process write", obtaining two texture
         // views from the view target - a `source` and a `destination`.
         // `source` is the "current" main texture and you _must_ write into
@@ -179,6 +188,7 @@ impl ViewNode for PostProcessNode {
                 &post_process_pipeline.sampler,
                 // Set the settings binding
                 settings_binding.clone(),
+                time_binding.clone(),
             )),
         );
 
@@ -235,6 +245,7 @@ impl FromWorld for PostProcessPipeline {
                     sampler(SamplerBindingType::Filtering),
                     // The settings uniform that will control the effect
                     uniform_buffer::<PostProcessSettings>(true),
+                    uniform_buffer::<TimeData>(false),
                 ),
             ),
         );
@@ -286,4 +297,18 @@ impl FromWorld for PostProcessPipeline {
 #[derive(Component, Default, Clone, Copy, ExtractComponent, ShaderType)]
 pub struct PostProcessSettings {
     pub intensity: f32,
+}
+
+#[derive(Component, Clone, Copy, ExtractComponent, ShaderType)]
+pub struct TimeData{
+    pub time: f32,
+}
+
+fn update_time(
+    time: Res<Time>,
+    mut time_data_query: Query<&mut TimeData>,
+){
+    for mut td in &mut time_data_query{
+        td.time = time.elapsed_secs();
+    }
 }

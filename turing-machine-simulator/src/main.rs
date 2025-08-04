@@ -4,7 +4,7 @@ use std::{fs, path::Path};
 
 use bevy::{audio::Volume, prelude::*, window::{WindowResized, WindowResolution}};
 
-use crate::{menus::MenuState, post_processing::PostProcessSettings};
+use crate::{menus::MenuState, post_processing::{PostProcessSettings, TimeData}};
 
 mod menus;
 mod games;
@@ -100,6 +100,7 @@ fn setup(
             intensity: 0.0021,
             ..default()
         },
+        TimeData {time: 0.0},
     ));
     let font = asset_server.load(FONT_FILE);
     commands.insert_resource(DefaultFont(font));
