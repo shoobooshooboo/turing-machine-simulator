@@ -32,9 +32,13 @@ struct PostProcessSettings {
 @group(0) @binding(2) var<uniform> settings: PostProcessSettings;
 
 @fragment
-fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
+fn fragment(
+    @location(0) uv: vec2<f32>,
+    @builtin(position) position: vec4<f32>
+) -> @location(0) vec4<f32> {
     // Chromatic aberration strength
     let offset_strength = settings.intensity;
+    let scan_effect = f32(u32(position.y) % 3u);
 
     // Sample each color channel with an arbitrary shift
     // return vec4<f32>(
@@ -44,9 +48,9 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     //     1.0
     // );
     return vec4<f32>(
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength * 3.0, 0.0)).r,
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength * 2.0, 0.0)).g,
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength, 0.0)).b,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength * 3.0, 0.0)).r * scan_effect,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength * 2.0, 0.0)).g * scan_effect,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength, 0.0)).b * scan_effect,
         1.0
     );
 }
