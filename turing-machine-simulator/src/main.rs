@@ -13,6 +13,11 @@ mod post_processing;
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
+
+const DEFAULT_CHROMATIC_ABBERATION: f32 = 0.0021;
+const MAX_CHROMATIC_ABBERATION: f32 = 0.05;
+const MIN_CHROMATIC_ABBERATION: f32 = 0.0;
+
 const AUDIO_FILE_PREFIX: &'static str = "audio\\";
 const FONT_FILE: &'static str = "dos_font.ttf";
 const SETTINGS_FILE: &'static str = "assets\\saves\\settings";
@@ -93,20 +98,12 @@ fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ){
-    // commands.spawn(Camera2d::default());
-    commands.spawn((
-        Camera2d::default(),
-        PostProcessSettings {
-            intensity: 0.0021,
-            ..default()
-        },
-        TimeData {time: 0.0},
-    ));
     let font = asset_server.load(FONT_FILE);
     commands.insert_resource(DefaultFont(font));
 
     commands.insert_resource(VolumeSetting(Volume::Linear(1.0)));
 
+    let mut chromatic_abberation = DEFAULT_CHROMATIC_ABBERATION;
     let contents = fs::read_to_string(Path::new(SETTINGS_FILE)).unwrap_or_default();
     for line in contents.lines(){
         let line: Vec<&str> = line.split_ascii_whitespace().collect();
@@ -124,9 +121,18 @@ fn setup(
 
         match identifier.as_str(){
             "volume" => commands.insert_resource(VolumeSetting(Volume::Linear(value))),
+            "chromabb" => chromatic_abberation = value,
             _ => (),
         }
     }
+
+    commands.spawn((
+        Camera2d::default(),
+        PostProcessSettings {
+            intensity: chromatic_abberation.clamp(MIN_CHROMATIC_ABBERATION, MAX_CHROMATIC_ABBERATION),
+        },
+        TimeData {time: 0.0},
+    ));
 }
 
 fn transition(

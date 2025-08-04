@@ -52,9 +52,9 @@ fn fragment(
     let scan_effect = little_lines * big_lines;
 
     return vec4<f32>(
-        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength * 3.0, 0.0)).r * scan_effect,
-        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength * 2.0, 0.0)).g * scan_effect,
-        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength, 0.0)).b * scan_effect,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(-offset_strength, 0.0)).r * scan_effect,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(0.0, 0.0)).g * scan_effect,
+        textureSample(screen_texture, texture_sampler, uv + vec2<f32>(offset_strength, 0.0)).b * scan_effect,
         1.0
     );
 }
