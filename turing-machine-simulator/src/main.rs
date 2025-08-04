@@ -163,9 +163,12 @@ pub fn scale_text(
 pub fn save_setting(
     exit: EventReader<AppExit>,
     volume: Res<VolumeSetting>,
+    chromabb_query: Query<&PostProcessSettings>,
 ){
     if exit.is_empty(){ return; }
-    let contents = "volume ".to_string() + &volume.0.to_linear().to_string();
+    let chromabb = chromabb_query.single().unwrap().intensity;
+    let contents = "volume ".to_string() + &volume.0.to_linear().to_string()
+                         + "\nchromabb " + &chromabb.to_string();
 
     let _ = fs::write(SETTINGS_FILE, contents);
 }

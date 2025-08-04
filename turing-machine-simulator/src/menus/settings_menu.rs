@@ -3,6 +3,7 @@ use bevy::{prelude::*};
 use bevy::text::FontSmoothing;
 
 use crate::menus::{MenuDetransitionEvent};
+use crate::post_processing::PostProcessSettings;
 use crate::{VolumeSetting, DefaultFont, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH};
 use crate::{menus::{PlayerIndex}, BaseFontSize};
 
@@ -189,6 +190,7 @@ pub fn slider_controls(
     mut thumbs: Query<&mut Thumb>,
     time: Res<Time>,
     mut volume: ResMut<VolumeSetting>,
+    mut chromabb_query: Query<&mut PostProcessSettings>,
 ){
     let dt = time.delta_secs();
     if inputs.pressed(KeyCode::ArrowLeft){
@@ -196,11 +198,16 @@ pub fn slider_controls(
             if t.index == **player_index{
                 t.location -= dt;
                 t.location = t.location.clamp(0.0, 1.0);
-                volume.0 = Volume::Linear(t.location);
+                match t.index{
+                    0 => volume.0 = Volume::Linear(t.location),
+                    1 => {},
+                    _ => {},
+                }
                 break;
             }
         }      
     }
+
     if inputs.pressed(KeyCode::ArrowRight){
         for mut t in &mut thumbs{
             if t.index == **player_index{
