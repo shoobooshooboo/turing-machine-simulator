@@ -8,12 +8,14 @@ use crate::{menus::MenuState, post_processing::{PostProcessSettings, TimeData}};
 
 mod menus;
 mod games;
+mod pause;
 mod post_processing;
 
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
 
+//all these are based on vibes
 const DEFAULT_CHROMATIC_ABERATION: f32 = 0.0021;
 const MAX_CHROMATIC_ABERATION: f32 = 0.01224853;
 const MIN_CHROMATIC_ABERATION: f32 = 0.0;
@@ -62,6 +64,7 @@ fn main() {
     }))
     .add_plugins(menus::MenuPlugin)
     .add_plugins(games::GamePlugin)
+    .add_plugins(pause::PausePlugin)
     .add_plugins(post_processing::PostProcessPlugin)
     .insert_state(AppState::Transition)
     .configure_sets(

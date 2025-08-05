@@ -104,7 +104,7 @@ impl Plugin for GamePlugin{
         ).run_if(in_state(AppState::InGame)
         ))
         .add_systems(
-            OnExit(AppState::InGame),
+            OnEnter(AppState::InMenu),
             unload_ui
         )
         ;
@@ -195,6 +195,7 @@ fn controls(
     mut cells: Query<&mut Cell>,
     mut tape: ResMut<Tape>,
     mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
     mut detransitions: EventWriter<MenuDetransitionEvent>,
     mut game_sounds: EventWriter<PlayGameSoundEvent>,
 ){
@@ -219,7 +220,6 @@ fn controls(
         game_sounds.write(PlayGameSoundEvent(GameSoundType::Move));
     }else if cursor_tried_move{
         game_sounds.write(PlayGameSoundEvent(GameSoundType::CantMove));
-
     }
     
     if inputs.just_pressed(KeyCode::Backspace){
@@ -228,8 +228,7 @@ fn controls(
     }
 
     if inputs.just_pressed(KeyCode::Escape){
-        next_game_state.set(GameState::None);
-        detransitions.write(MenuDetransitionEvent);
+        next_app_state.set(AppState::Paused);
     }
 }
 
