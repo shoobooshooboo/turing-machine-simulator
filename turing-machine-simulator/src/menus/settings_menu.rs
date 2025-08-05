@@ -4,7 +4,7 @@ use bevy::text::FontSmoothing;
 
 use crate::menus::{MenuDetransitionEvent};
 use crate::post_processing::PostProcessSettings;
-use crate::{DefaultFont, VolumeSetting, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH, MAX_CHROMATIC_ABBERATION, MIN_CHROMATIC_ABBERATION};
+use crate::{DefaultFont, VolumeSetting, BASE_WINDOW_HEIGHT, BASE_WINDOW_WIDTH, DEFAULT_CHROMATIC_ABERATION, MAX_CHROMATIC_ABERATION, MIN_CHROMATIC_ABERATION};
 use crate::{menus::{PlayerIndex}, BaseFontSize};
 
 use super::{MenuUI, ButtonIndex, ButtonCount, BUTTON_OUTLINE_UNSELECTED_WIDTH_PER, BUTTON_UNSELECTED_COLOR};
@@ -52,7 +52,7 @@ pub fn load(
     mut mats: ResMut<Assets<ColorMaterial>>,
     volume: Res<VolumeSetting>,
     font: Res<DefaultFont>,
-    chromabb_query: Query<&PostProcessSettings>,
+    chromab_query: Query<&PostProcessSettings>,
 ){
     **button_count = SLIDER_TEXT.len() + 1;
     //TEXT
@@ -81,7 +81,7 @@ pub fn load(
         TextLayout::new_with_justify(JustifyText::Center),
     ));
 
-    let starting_positions = [volume.0.to_linear(), chromabb_query.single().unwrap().intensity];
+    let starting_positions = [volume.0.to_linear(), chromab_query.single().unwrap().intensity / (MAX_CHROMATIC_ABERATION - MIN_CHROMATIC_ABERATION)];
 
     //Sliders
     for i in 0..SLIDER_TEXT.len(){
@@ -193,7 +193,7 @@ pub fn slider_controls(
     mut thumbs: Query<&mut Thumb>,
     time: Res<Time>,
     mut volume: ResMut<VolumeSetting>,
-    mut chromabb_query: Query<&mut PostProcessSettings>,
+    mut chromab_query: Query<&mut PostProcessSettings>,
 ){
     let dt = time.delta_secs();
 
@@ -205,10 +205,18 @@ pub fn slider_controls(
             if inputs.pressed(KeyCode::ArrowRight){
                 t.location += dt;
             }
+            if inputs.just_pressed(KeyCode::Enter){
+                match t.index{
+                    0 => t.location = 0.5,
+                    1 => t.location =  DEFAULT_CHROMATIC_ABERATION / (MAX_CHROMATIC_ABERATION - MIN_CHROMATIC_ABERATION),
+                    _ => {},
+                }
+            }
+
             t.location = t.location.clamp(0.0, 1.0);
             match t.index{
                 0 => volume.0 = Volume::Linear(t.location),
-                1 => {chromabb_query.single_mut().unwrap().intensity = (MAX_CHROMATIC_ABBERATION - MIN_CHROMATIC_ABBERATION) * t.location},
+                1 => {chromab_query.single_mut().unwrap().intensity = (MAX_CHROMATIC_ABERATION - MIN_CHROMATIC_ABERATION) * t.location},
                 _ => {},
             }
             break;

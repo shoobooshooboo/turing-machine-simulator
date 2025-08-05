@@ -193,14 +193,14 @@ fn load_ui(
     mats: ResMut<Assets<ColorMaterial>>,
     volume: Res<VolumeSetting>,
     font: Res<DefaultFont>,
-    chromabb_query: Query<&PostProcessSettings>,
+    chromab_query: Query<&PostProcessSettings>,
 ){
     match **menu_state{
         MenuState::MainMenu => main_menu::load(commands, button_count, font),
         MenuState::GameMenu => game_menu::load(commands, button_count, font), 
         MenuState::CreditsMenu => credits_menu::load(commands, button_count, font),
         MenuState::SandboxMenu => sandbox_menu::load(commands, button_count, font),
-        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats, volume, font, chromabb_query),
+        MenuState::SettingsMenu => settings_menu::load(commands, button_count, meshes, mats, volume, font, chromab_query),
         _ => print!("unimplemented menu"),
     }
 }
@@ -236,6 +236,9 @@ fn transition_dispatcher(
 ){
     if menu_transition.is_empty() {return;}
     menu_transition.clear();
+    if **menu_state == MenuState::SettingsMenu && **player_index < 2{
+        return;
+    }
     match **menu_state{
         MenuState::CreditsMenu => credits_menu::transition(detransition_writer),
         MenuState::GameMenu => game_menu::transition(&player_index, next_menu_state, menu_stack, detransition_writer),

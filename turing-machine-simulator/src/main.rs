@@ -14,9 +14,9 @@ const BASE_WINDOW_HEIGHT: f32 = 800.0;
 const BASE_WINDOW_WIDTH: f32 = 1200.0;
 const BASE_WINDOW_ASPECT_RATIO: f32 = BASE_WINDOW_WIDTH / BASE_WINDOW_HEIGHT;
 
-const DEFAULT_CHROMATIC_ABBERATION: f32 = 0.0021;
-const MAX_CHROMATIC_ABBERATION: f32 = 0.05;
-const MIN_CHROMATIC_ABBERATION: f32 = 0.0;
+const DEFAULT_CHROMATIC_ABERATION: f32 = 0.0021;
+const MAX_CHROMATIC_ABERATION: f32 = 0.01224853;
+const MIN_CHROMATIC_ABERATION: f32 = 0.0;
 
 const AUDIO_FILE_PREFIX: &'static str = "audio\\";
 const FONT_FILE: &'static str = "dos_font.ttf";
@@ -103,7 +103,7 @@ fn setup(
 
     commands.insert_resource(VolumeSetting(Volume::Linear(1.0)));
 
-    let mut chromatic_abberation = DEFAULT_CHROMATIC_ABBERATION;
+    let mut chromatic_abberation = DEFAULT_CHROMATIC_ABERATION;
     let contents = fs::read_to_string(Path::new(SETTINGS_FILE)).unwrap_or_default();
     for line in contents.lines(){
         let line: Vec<&str> = line.split_ascii_whitespace().collect();
@@ -121,7 +121,7 @@ fn setup(
 
         match identifier.as_str(){
             "volume" => commands.insert_resource(VolumeSetting(Volume::Linear(value))),
-            "chromabb" => chromatic_abberation = value,
+            "chromab" => chromatic_abberation = value,
             _ => (),
         }
     }
@@ -129,7 +129,7 @@ fn setup(
     commands.spawn((
         Camera2d::default(),
         PostProcessSettings {
-            intensity: chromatic_abberation.clamp(MIN_CHROMATIC_ABBERATION, MAX_CHROMATIC_ABBERATION),
+            intensity: chromatic_abberation.clamp(MIN_CHROMATIC_ABERATION, MAX_CHROMATIC_ABERATION),
         },
         TimeData {time: 0.0},
     ));
@@ -163,12 +163,12 @@ pub fn scale_text(
 pub fn save_setting(
     exit: EventReader<AppExit>,
     volume: Res<VolumeSetting>,
-    chromabb_query: Query<&PostProcessSettings>,
+    chromab_query: Query<&PostProcessSettings>,
 ){
     if exit.is_empty(){ return; }
-    let chromabb = chromabb_query.single().unwrap().intensity;
+    let chromab = chromab_query.single().unwrap().intensity;
     let contents = "volume ".to_string() + &volume.0.to_linear().to_string()
-                         + "\nchromabb " + &chromabb.to_string();
+                         + "\nchromab " + &chromab.to_string();
 
     let _ = fs::write(SETTINGS_FILE, contents);
 }
