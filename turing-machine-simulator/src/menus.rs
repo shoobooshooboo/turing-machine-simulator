@@ -98,7 +98,7 @@ impl Plugin for MenuPlugin{
         load_ui
     )
     .add_systems(
-        OnTransition{exited: AppState::InMenu, entered: AppState::Transition},
+        OnExit(AppState::InMenu),
          unload_ui
     )
     .add_systems(

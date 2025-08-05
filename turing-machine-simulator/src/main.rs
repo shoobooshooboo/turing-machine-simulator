@@ -6,9 +6,9 @@ use bevy::{audio::Volume, prelude::*, window::{WindowResized, WindowResolution}}
 
 use crate::{menus::MenuState, post_processing::{PostProcessSettings, TimeData}};
 
+mod pause;
 mod menus;
 mod games;
-mod pause;
 mod post_processing;
 
 const BASE_WINDOW_HEIGHT: f32 = 800.0;
@@ -30,7 +30,6 @@ const SHADER_FILE: &'static str = "shaders\\post_processing.wgsl";
 enum AppState{
     InGame,
     InMenu,
-    Paused,
     Transition,
 }
 

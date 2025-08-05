@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path, slice::Iter};
 use bevy::{audio::PlaybackMode, input::{keyboard::{Key, KeyboardInput}, ButtonState}, prelude::*, render::mesh::Triangle2dMeshBuilder, text::FontSmoothing};
-use crate::{menus::{MenuDetransitionEvent}, AppState, BaseFontSize, VolumeSetting, DefaultFont, UpdateSet, AUDIO_FILE_PREFIX};
+use crate::{pause::PauseState, AppState, BaseFontSize, DefaultFont, UpdateSet, VolumeSetting, AUDIO_FILE_PREFIX};
 
 //Tape Cells
 const CELL_COUNT: usize = 1_000_000;
@@ -101,10 +101,11 @@ impl Plugin for GamePlugin{
                 write_to_cell.in_set(UpdateSet::Logic),
                 play_game_sound.in_set(UpdateSet::Logic),
                 update_cells.in_set(UpdateSet::UI),
-        ).run_if(in_state(AppState::InGame)
+        ).run_if(in_state(AppState::InGame))
+         .run_if(in_state(PauseState::Unpaused)
         ))
         .add_systems(
-            OnEnter(AppState::InMenu),
+            OnExit(AppState::InGame),
             unload_ui
         )
         ;
@@ -194,9 +195,7 @@ fn controls(
     inputs: Res<ButtonInput<KeyCode>>,
     mut cells: Query<&mut Cell>,
     mut tape: ResMut<Tape>,
-    mut next_game_state: ResMut<NextState<GameState>>,
-    mut next_app_state: ResMut<NextState<AppState>>,
-    mut detransitions: EventWriter<MenuDetransitionEvent>,
+    mut next_pause_state: ResMut<NextState<PauseState>>,
     mut game_sounds: EventWriter<PlayGameSoundEvent>,
 ){
     let initial_cursor = **cursor;
@@ -228,7 +227,7 @@ fn controls(
     }
 
     if inputs.just_pressed(KeyCode::Escape){
-        next_app_state.set(AppState::Paused);
+        next_pause_state.set(PauseState::Paused);
     }
 }
 
