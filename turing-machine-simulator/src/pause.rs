@@ -1,10 +1,11 @@
 use bevy::{prelude::*};
-use crate::{UpdateSet};
+use crate::{BaseFontSize, DefaultFont, UpdateSet};
 
 const PAUSE_MENU_WIDTH_PER: f32 = 60.0;
 const PAUSE_MENU_HEIGHT_PER: f32 = 60.0;
-const PAUSE_BUTTON_WIDTH_PER: f32 = 25.5;
-const PAUSE_BUTTON_SPACING_PER: f32 = (PAUSE_MENU_WIDTH_PER - PAUSE_BUTTON_WIDTH_PER * 2.0) / 3.0;
+const PAUSE_MENU_FONT_SIZE: f32 = 80.0;
+const PAUSE_BUTTON_WIDTH_PER: f32 = 50.0;
+const PAUSE_BUTTON_SPACING_PER: f32 = (PAUSE_MENU_WIDTH_PER - PAUSE_BUTTON_WIDTH_PER) / 2.0;
 const PAUSE_BUTTON_HEIGHT_PER: f32 = 40.0;
 
 #[derive(Component)]
@@ -33,6 +34,7 @@ fn load_ui(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<ColorMaterial>>,
+    font: Res<DefaultFont>,
 ){
     //spawn rectangle that dims the screen
     commands.spawn((
@@ -55,6 +57,15 @@ fn load_ui(
         },
         BackgroundColor(Color::linear_rgb(0x0B as f32 / 255.0, 0x4F as f32 / 255.0, 0x6C as f32 / 255.0)),
         Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
+    )).with_child((
+        Text::new("Paused"),
+        TextFont{
+            font: font.0.clone(),
+            font_size: PAUSE_MENU_FONT_SIZE,
+            font_smoothing: bevy::text::FontSmoothing::AntiAliased,
+            ..Default::default()
+        },
+        BaseFontSize(PAUSE_MENU_FONT_SIZE),
     ));
 }
 
