@@ -1,6 +1,11 @@
 use bevy::{prelude::*};
-
 use crate::{UpdateSet};
+
+const PAUSE_MENU_WIDTH_PER: f32 = 60.0;
+const PAUSE_MENU_HEIGHT_PER: f32 = 60.0;
+const PAUSE_BUTTON_WIDTH_PER: f32 = 25.5;
+const PAUSE_BUTTON_SPACING_PER: f32 = (PAUSE_MENU_WIDTH_PER - PAUSE_BUTTON_WIDTH_PER * 2.0) / 3.0;
+const PAUSE_BUTTON_HEIGHT_PER: f32 = 40.0;
 
 #[derive(Component)]
 struct PauseUI;
@@ -34,6 +39,22 @@ fn load_ui(
         PauseUI,
         Mesh2d(meshes.add(Rectangle::new(10000.0, 10000.0))),
         MeshMaterial2d(mats.add(Color::linear_rgba(0.0, 0.0, 0.0, 0.8))),
+    ));
+
+    commands.spawn((
+        PauseUI,
+        Node{
+            position_type: PositionType::Absolute,
+            top: Val::Percent((100.0 - PAUSE_MENU_HEIGHT_PER) / 2.0),
+            left: Val::Percent((100.0 - PAUSE_MENU_WIDTH_PER) / 2.0),
+            height: Val::Vh(PAUSE_MENU_HEIGHT_PER),
+            width: Val::Vw(PAUSE_MENU_WIDTH_PER),
+            justify_content: JustifyContent::SpaceAround,
+            align_items: AlignItems::Center,
+            ..Default::default()
+        },
+        BackgroundColor(Color::linear_rgb(0x0B as f32 / 255.0, 0x4F as f32 / 255.0, 0x6C as f32 / 255.0)),
+        Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
     ));
 }
 
