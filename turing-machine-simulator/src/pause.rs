@@ -24,7 +24,10 @@ impl Plugin for PausePlugin{
         app
         .insert_state(PauseState::Unpaused)
         .add_systems(OnEnter(PauseState::Paused), load_ui)
-        .add_systems(Update, controls.in_set(UpdateSet::Input).run_if(in_state(PauseState::Paused)))
+        .add_systems(Update, (
+            controls,
+            update_buttons,
+        ).in_set(UpdateSet::Input).run_if(in_state(PauseState::Paused)))
         .add_systems(OnExit(PauseState::Paused), unload_ui)
         ;
     }
@@ -85,7 +88,7 @@ fn load_ui(
         TextLayout::new_with_justify(JustifyText::Center).with_no_wrap()
     )).with_child((
         Button,
-        ButtonIndex(0),
+        ButtonIndex(1),
         Text::new("Save & Exit"),
         TextFont{
             font: font.0.clone(),
@@ -128,6 +131,19 @@ fn controls(
     //exit paused mode
     if inputs.just_pressed(KeyCode::Escape){
         next_pause_state.set(PauseState::Unpaused);
+    }
+}
+
+fn update_buttons(
+    mut buttons: Query<(&ButtonIndex, &mut TextColor), With<Button>>,
+    player_index: Res<PlayerIndex>,
+){
+    for (index, mut color) in &mut buttons{
+        if **index == **player_index{
+            color.0 = PAUSE_BUTTON_TEXT_SELECTED_COLOR;
+        }else{
+            color.0 = PAUSE_BUTTON_TEXT_UNSELECTED_COLOR;
+        }
     }
 }
 
