@@ -32,7 +32,7 @@ struct MenuUI;
 
 ///index of a button
 #[derive(Component, Deref, DerefMut)]
-struct ButtonIndex(usize);
+pub struct ButtonIndex(pub usize);
 
 #[derive(Resource, Deref)]
 struct MenuSounds(HashMap<MenuSoundType, Handle<AudioSource>>);

@@ -1,12 +1,12 @@
 use bevy::{prelude::*};
-use crate::{BaseFontSize, DefaultFont, UpdateSet};
+use crate::{menus::ButtonIndex, BaseFontSize, DefaultFont, UpdateSet};
 
 const PAUSE_MENU_WIDTH_PER: f32 = 60.0;
 const PAUSE_MENU_HEIGHT_PER: f32 = 60.0;
 const PAUSE_MENU_FONT_SIZE: f32 = 80.0;
-const PAUSE_BUTTON_WIDTH_PER: f32 = 50.0;
-const PAUSE_BUTTON_SPACING_PER: f32 = (PAUSE_MENU_WIDTH_PER - PAUSE_BUTTON_WIDTH_PER) / 2.0;
-const PAUSE_BUTTON_HEIGHT_PER: f32 = 40.0;
+const PAUSE_BUTTON_TEXT_FONT_SIZE: f32 = 60.0;
+const PAUSE_BUTTON_TEXT_SELECTED_COLOR: Color = Color::WHITE;
+const PAUSE_BUTTON_TEXT_UNSELECTED_COLOR: Color = Color::linear_rgb(0.3, 0.3, 0.3);
 
 #[derive(Component)]
 struct PauseUI;
@@ -51,12 +51,14 @@ fn load_ui(
             left: Val::Percent((100.0 - PAUSE_MENU_WIDTH_PER) / 2.0),
             height: Val::Vh(PAUSE_MENU_HEIGHT_PER),
             width: Val::Vw(PAUSE_MENU_WIDTH_PER),
+            flex_direction: FlexDirection::Column,
             justify_content: JustifyContent::SpaceAround,
             align_items: AlignItems::Center,
             ..Default::default()
         },
         BackgroundColor(Color::linear_rgb(0x0B as f32 / 255.0, 0x4F as f32 / 255.0, 0x6C as f32 / 255.0)),
         Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
+
     )).with_child((
         Text::new("Paused"),
         TextFont{
@@ -66,6 +68,34 @@ fn load_ui(
             ..Default::default()
         },
         BaseFontSize(PAUSE_MENU_FONT_SIZE),
+        TextColor(Color::linear_rgb(1.0, 0.0, 0.0)),
+        TextLayout::new_with_justify(JustifyText::Center).with_no_wrap()
+    )).with_child((
+        Button,
+        ButtonIndex(0),
+        Text::new("Continue"),
+        TextFont{
+            font: font.0.clone(),
+            font_size: PAUSE_BUTTON_TEXT_FONT_SIZE,
+            font_smoothing: bevy::text::FontSmoothing::AntiAliased,
+            ..Default::default()
+        },
+        BaseFontSize(PAUSE_BUTTON_TEXT_FONT_SIZE),
+        TextColor(PAUSE_BUTTON_TEXT_SELECTED_COLOR),
+        TextLayout::new_with_justify(JustifyText::Center).with_no_wrap()
+    )).with_child((
+        Button,
+        ButtonIndex(0),
+        Text::new("Save & Exit"),
+        TextFont{
+            font: font.0.clone(),
+            font_size: PAUSE_BUTTON_TEXT_FONT_SIZE,
+            font_smoothing: bevy::text::FontSmoothing::AntiAliased,
+            ..Default::default()
+        },
+        BaseFontSize(PAUSE_BUTTON_TEXT_FONT_SIZE),
+        TextColor(PAUSE_BUTTON_TEXT_UNSELECTED_COLOR),
+        TextLayout::new_with_justify(JustifyText::Center).with_no_wrap()
     ));
 }
 
