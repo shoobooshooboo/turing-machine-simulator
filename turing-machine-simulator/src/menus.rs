@@ -39,7 +39,7 @@ struct MenuSounds(HashMap<MenuSoundType, Handle<AudioSource>>);
 
 ///player's current selected button
 #[derive(Resource, Deref, DerefMut, Default, Clone, Copy)]
-struct PlayerIndex(usize);
+pub struct PlayerIndex(usize);
 
 ///total number of buttons in current menu
 #[derive(Resource, Deref, DerefMut, Default)]

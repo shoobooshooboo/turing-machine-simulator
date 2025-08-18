@@ -1,5 +1,5 @@
 use bevy::{prelude::*};
-use crate::{menus::ButtonIndex, BaseFontSize, DefaultFont, UpdateSet};
+use crate::{games::GameState, menus::{ButtonIndex, MenuDetransitionEvent, PlayerIndex}, BaseFontSize, DefaultFont, UpdateSet};
 
 const PAUSE_MENU_WIDTH_PER: f32 = 60.0;
 const PAUSE_MENU_HEIGHT_PER: f32 = 60.0;
@@ -102,7 +102,28 @@ fn load_ui(
 fn controls(
     inputs: Res<ButtonInput<KeyCode>>,
     mut next_pause_state: ResMut<NextState<PauseState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut menu_detransition: EventWriter<MenuDetransitionEvent>,
+    mut player_index: ResMut<PlayerIndex>,
 ){
+    if inputs.just_pressed(KeyCode::ArrowUp){
+        **player_index = player_index.checked_sub(1).unwrap_or(1);
+    }
+    if inputs.just_pressed(KeyCode::ArrowDown){
+        **player_index = (**player_index + 1) % 2;
+    }
+
+    if inputs.just_pressed(KeyCode::Enter){
+        match **player_index{
+            0 => next_pause_state.set(PauseState::Unpaused),
+            1 => {
+                next_pause_state.set(PauseState::Unpaused);
+                next_game_state.set(GameState::None);
+                menu_detransition.write(MenuDetransitionEvent);
+            },
+            _ => panic!("nonexistant pause button"),
+        }
+    }
 
     //exit paused mode
     if inputs.just_pressed(KeyCode::Escape){
