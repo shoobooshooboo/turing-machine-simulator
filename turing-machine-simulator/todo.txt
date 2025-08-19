@@ -1,0 +1,13 @@
+NEW FEATURES
+- animations (do i actually want this anymore?)
+- quest/level mode (level selector should be a single button that cycles through the different option with left and right arrow)
+- file selection for sandbox mode
+- music and/or ambient sounds
+- toggle for horror mode
+
+REFACTORING (include the what and why)
+- Make audio a single plugin that can be accessed publicly so all sounds can be played from anywhere.
+
+STYLE
+- square and emboss buttons
+- MORE SHADER EFFECTS (make the screen convex)
